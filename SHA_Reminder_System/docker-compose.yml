@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sha_user
+      POSTGRES_PASSWORD: sha_pass
+      POSTGRES_DB: sha_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sha_user -d sha_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
+      DATABASE_URL_SYNC: postgresql://sha_user:sha_pass@postgres:5432/sha_db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DEBUG: "true"
+      MPESA_ENVIRONMENT: sandbox
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - backend_logs:/app/logs
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.core.celery_config worker -l info -Q reminders,payments
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - backend
+      - redis
+    volumes:
+      - ./backend:/app
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.core.celery_config beat -l info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - celery_worker
+      - redis
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:
+  backend_logs:

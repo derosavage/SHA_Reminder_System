@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Environment files with secrets
+.env
+!*.env.example
+
+# Logs
+*.log
+logs/
+!logs/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data & Config (local)
+*.db
+*.sqlite
+*.sqlite3
+backtests/
+data/
+
+# Trading bot specific
+config/settings.json
