@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/env_config.dart';
 
 final dioProvider = Provider<Dio>((ref) {
+  final config = ref.watch(appConfigProvider);
+  
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'http://10.0.2.2:8000/api/v1', // Standard Android emulator localhost
+      baseUrl: config.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       headers: {

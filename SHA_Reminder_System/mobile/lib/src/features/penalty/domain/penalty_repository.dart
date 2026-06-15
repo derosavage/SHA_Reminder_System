@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/penalty_api_service.dart';
+import '../data/penalty_local_service.dart';
 
 class PenaltyCalculationResult {
   final double totalPenalty;
@@ -17,20 +18,22 @@ class PenaltyCalculationResult {
 
 class PenaltyRepository {
   final PenaltyApiService _apiService;
+  final PenaltyLocalService _localService;
 
-  PenaltyRepository(this._apiService);
+  PenaltyRepository(this._apiService, this._localService);
 
   Future<PenaltyCalculationResult> calculate({
     required int missedMonths,
     double monthlyContribution = 300.0,
   }) async {
+    PenaltyCalculationResult result;
     try {
       final data = await _apiService.calculatePenalty(
-        missed_months: missedMonths,
+        missedMonths: missedMonths,
         monthlyContribution: monthlyContribution,
       );
 
-      return PenaltyCalculationResult(
+      result = PenaltyCalculationResult(
         totalPenalty: (data['penalty_amount'] ?? 0.0).toDouble(),
         totalDue: (data['total_amount_due'] ?? 0.0).toDouble(),
         breakdown: data['months_breakdown'] ?? [],
@@ -38,8 +41,17 @@ class PenaltyRepository {
       );
     } catch (e) {
       // Fallback to local calculation if API fails
-      return _calculateLocally(missed_months, monthlyContribution);
+      result = _calculateLocally(missedMonths, monthlyContribution);
     }
+
+    // Save to local database for history/audit
+    await _localService.saveCalculation(result, missedMonths, monthlyContribution);
+
+    return result;
+  }
+
+  Future<List<PenaltyCalculationResult>> getHistory() async {
+    return await _localService.getAllCalculations();
   }
 
   PenaltyCalculationResult _calculateLocally(int missedMonths, double monthlyAmount) {
@@ -68,5 +80,6 @@ class PenaltyRepository {
 
 final penaltyRepositoryProvider = Provider<PenaltyRepository>((ref) {
   final apiService = ref.watch(penaltyApiServiceProvider);
-  return PenaltyRepository(apiService);
+  final localService = ref.watch(penaltyLocalServiceProvider);
+  return PenaltyRepository(apiService, localService);
 });

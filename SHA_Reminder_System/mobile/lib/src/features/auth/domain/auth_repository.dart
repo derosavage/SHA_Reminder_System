@@ -12,22 +12,35 @@ class AuthRepository {
     await _apiService.login(phoneNumber);
   }
 
-  Future<bool> verifyOtp(String phoneNumber, String otpCode) async {
-    final result = await _apiService.verify_otp(
+  Future<bool> verifyOtp({
+    required String phoneNumber,
+    required String otpCode,
+    String? nationalId,
+  }) async {
+    final result = await _apiService.verifyOtp(
       phoneNumber: phoneNumber,
       otpCode: otpCode,
     );
 
     if (result['success'] == true) {
-      final token = result['data']['access_token'];
-      await _storage.write(key: 'auth_token', value: token);
+      final data = result['data'];
+      await _storage.write(key: 'auth_token', value: data['access_token']);
+      await _storage.write(key: 'user_id', value: data['user_id']);
+      await _storage.write(key: 'phone_number', value: phoneNumber);
+      if (nationalId != null) {
+        await _storage.write(key: 'national_id', value: nationalId);
+      }
       return true;
     }
     return false;
   }
 
+  Future<String?> getStoredNationalId() async => await _storage.read(key: 'national_id');
+  Future<String?> getStoredUserId() async => await _storage.read(key: 'user_id');
+  Future<String?> getStoredPhoneNumber() async => await _storage.read(key: 'phone_number');
+
   Future<void> logout() async {
-    await _storage.delete(key: 'auth_token');
+    await _storage.deleteAll();
   }
 
   Future<bool> isAuthenticated() async {

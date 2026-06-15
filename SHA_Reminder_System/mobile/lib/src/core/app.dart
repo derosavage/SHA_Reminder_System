@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/dashboard/presentation/main_navigation_screen.dart';
 
 class SHAReminderApp extends StatelessWidget {
   const SHAReminderApp({super.key});
@@ -15,14 +15,13 @@ class SHAReminderApp extends StatelessWidget {
           primary: const Color(0xFF006D3E),
         ),
         useMaterial3: true,
-        fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 0,
         ),
       ),
-      home: const DashboardScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }

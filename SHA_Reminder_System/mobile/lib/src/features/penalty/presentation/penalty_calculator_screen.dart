@@ -1,46 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../domain/penalty_repository.dart';
 
-class PenaltyCalculatorScreen extends StatefulWidget {
+class PenaltyCalculatorScreen extends ConsumerStatefulWidget {
   const PenaltyCalculatorScreen({super.key});
 
   @override
-  State<PenaltyCalculatorScreen> createState() => _PenaltyCalculatorScreenState();
+  ConsumerState<PenaltyCalculatorScreen> createState() => _PenaltyCalculatorScreenState();
 }
 
-class _PenaltyCalculatorScreenState extends State<PenaltyCalculatorScreen> {
+class _PenaltyCalculatorScreenState extends ConsumerState<PenaltyCalculatorScreen> {
   final _monthsController = TextEditingController();
   final _amountController = TextEditingController(text: '300');
 
-  double _totalPenalty = 0;
-  double _totalDue = 0;
-  List<Map<String, dynamic>> _breakdown = [];
+  bool _isLoading = false;
+  PenaltyCalculationResult? _result;
 
-  void _calculate() {
+  Future<void> _calculate() async {
     final missedMonths = int.tryParse(_monthsController.text) ?? 0;
     final monthlyAmount = double.tryParse(_amountController.text) ?? 300.0;
 
-    if (missedMonths <= 0) return;
-
-    const rate = 0.02; // 2%
-    double penaltySum = 0;
-    List<Map<String, dynamic>> tempBreakdown = [];
-
-    for (int i = 1; i <= missedMonths; i++) {
-      final monthPenalty = monthlyAmount * rate;
-      penaltySum += monthPenalty;
-
-      tempBreakdown.add({
-        'month': i,
-        'penalty': monthPenalty,
-        'running_total': (monthlyAmount * i) + (monthPenalty * i), // Simplified for demo
-      });
+    if (missedMonths <= 0) {
+      setState(() => _result = null);
+      return;
     }
 
-    setState(() {
-      _totalPenalty = penaltySum;
-      _totalDue = (monthlyAmount * missedMonths) + penaltySum;
-      _breakdown = tempBreakdown;
-    });
+    setState(() => _isLoading = true);
+
+    try {
+      final repo = ref.read(penaltyRepositoryProvider);
+      final result = await repo.calculate(
+        missedMonths: missedMonths,
+        monthlyContribution: monthlyAmount,
+      );
+      setState(() => _result = result);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -81,7 +85,23 @@ class _PenaltyCalculatorScreenState extends State<PenaltyCalculatorScreen> {
               onChanged: (_) => _calculate(),
             ),
             const SizedBox(height: 32),
-            if (_totalDue > 0) ...[
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_result != null) ...[
+              if (_result!.isOffline)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.cloud_off, size: 16, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text(
+                        'Using offline calculator (Estimated)',
+                        style: TextStyle(color: Colors.orange, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
               _buildResultCard(),
               const SizedBox(height: 24),
               const Text(
@@ -112,7 +132,7 @@ class _PenaltyCalculatorScreenState extends State<PenaltyCalculatorScreen> {
             children: [
               const Text('Total Penalty:'),
               Text(
-                'KES ${_totalPenalty.toStringAsFixed(2)}',
+                'KES ${_result!.totalPenalty.toStringAsFixed(2)}',
                 style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
               ),
             ],
@@ -123,7 +143,7 @@ class _PenaltyCalculatorScreenState extends State<PenaltyCalculatorScreen> {
             children: [
               const Text('Total Amount Due:', style: TextStyle(fontSize: 16)),
               Text(
-                'KES ${_totalDue.toStringAsFixed(2)}',
+                'KES ${_result!.totalDue.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -141,20 +161,23 @@ class _PenaltyCalculatorScreenState extends State<PenaltyCalculatorScreen> {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _breakdown.length,
+      itemCount: _result!.breakdown.length,
       separatorBuilder: (_, __) => const Divider(),
       itemBuilder: (context, index) {
-        final item = _breakdown[index];
+        final item = _result!.breakdown[index];
+        final monthNum = item['month_number'] ?? item['month'];
+        final penalty = (item['penalty_applied'] ?? item['penalty']).toDouble();
+
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
             backgroundColor: Colors.grey.shade200,
-            child: Text('${item['month']}'),
+            child: Text('$monthNum'),
           ),
-          title: Text('Month ${item['month']} Contribution'),
-          subtitle: Text('Penalty: KES ${item['penalty'].toStringAsFixed(2)}'),
+          title: Text('Month $monthNum Contribution'),
+          subtitle: Text('Penalty: KES ${penalty.toStringAsFixed(2)}'),
           trailing: Text(
-            'KES ${(double.tryParse(_amountController.text) ?? 300 + item['penalty']).toStringAsFixed(2)}',
+            'KES ${(double.tryParse(_amountController.text) ?? 300 + penalty).toStringAsFixed(2)}',
             style: const TextStyle(fontWeight: FontWeight.w500),
           ),
         );

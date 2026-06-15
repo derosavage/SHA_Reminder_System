@@ -1,14 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../../core/utils/validators.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../penalty/presentation/penalty_calculator_screen.dart';
+import '../../penalty/presentation/penalty_history_screen.dart';
+import 'providers/dashboard_provider.dart';
+import 'providers/eligibility_provider.dart';
+import 'providers/payment_provider.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
+  void _showPaymentSheet(BuildContext context, WidgetRef ref) {
+    final amountController = TextEditingController(text: '300');
+    final formKey = GlobalKey<FormState>();
+    final l10n = ref.read(l10nProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.translate('pay_sha'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Amount (KES)',
+                  border: OutlineInputBorder(),
+                  prefixText: 'KES ',
+                ),
+                validator: Validators.validateAmount,
+              ),
+              const SizedBox(height: 24),
+              Consumer(
+                builder: (context, ref, _) {
+                  final state = ref.watch(paymentStateProvider);
+                  
+                  if (state.status == PaymentStatus.success) {
+                    return Column(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 48),
+                        const SizedBox(height: 8),
+                        Text(state.message ?? '', textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.read(paymentStateProvider.notifier).reset();
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return ElevatedButton(
+                    onPressed: state.status == PaymentStatus.loading
+                        ? null
+                        : () {
+                            if (formKey.currentState!.validate()) {
+                              final amount = double.parse(amountController.text);
+                              ref.read(paymentStateProvider.notifier).initiatePayment(amount);
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF006D3E),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: state.status == PaymentStatus.loading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text(l10n.translate('pay_sha')),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardAsync = ref.watch(dashboardDataProvider);
+    final l10n = ref.watch(l10nProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SHA Reminder'),
+        title: Text(l10n.translate('app_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -16,38 +119,66 @@ class DashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildEligibilityCard(context),
-            const SizedBox(height: 24),
-            const Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(dashboardDataProvider.future),
+        child: dashboardAsync.when(
+          data: (state) => _buildContent(context, state, ref),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text('Error: $err'),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(dashboardDataProvider),
+                  child: const Text('Retry'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildActionGrid(context),
-            const SizedBox(height: 24),
-            const Text(
-              'Recent Transactions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _buildEmptyTransactions(),
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        label: const Text('Pay SHA'),
+        onPressed: () => _showPaymentSheet(context, ref),
+        label: Text(l10n.translate('pay_sha')),
         icon: const Icon(Icons.payment),
       ),
     );
   }
 
-  Widget _buildEligibilityCard(BuildContext context) {
+  Widget _buildContent(BuildContext context, EligibilityState state, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildEligibilityCard(context, state, l10n),
+          const SizedBox(height: 24),
+          const Text(
+            'Quick Actions',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          _buildActionGrid(context, l10n),
+          const SizedBox(height: 24),
+          const Text(
+            'Recent Transactions',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildEmptyTransactions(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEligibilityCard(BuildContext context, EligibilityState state, AppLocalizations l10n) {
+    final statusColor = state.status == EligibilityStatus.active ? Colors.green : Colors.red;
+    
     return Card(
       elevation: 0,
       color: Theme.of(context).colorScheme.primaryContainer,
@@ -59,20 +190,20 @@ class DashboardScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Eligibility Status',
-                      style: TextStyle(fontSize: 14, opacity: 0.8),
+                      l10n.translate('eligibility_status'),
+                      style: const TextStyle(fontSize: 14, color: Colors.black54),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'ACTIVE',
+                      l10n.translate(state.status.name),
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green,
+                        color: statusColor,
                       ),
                     ),
                   ],
@@ -80,21 +211,27 @@ class DashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: statusColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check_circle, color: Colors.green, size: 32),
+                  child: Icon(
+                    state.status == EligibilityStatus.active ? Icons.check_circle : Icons.error,
+                    color: statusColor,
+                    size: 32,
+                  ),
                 ),
               ],
             ),
             const Divider(height: 32),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Next Payment Due:'),
+                Text(l10n.translate('next_payment') + ':'),
                 Text(
-                  '09 July 2026',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  state.nextDueDate != null 
+                      ? DateFormat('dd MMMM yyyy').format(state.nextDueDate!)
+                      : 'N/A',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -104,7 +241,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionGrid(BuildContext context) {
+  Widget _buildActionGrid(BuildContext context, AppLocalizations l10n) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -115,20 +252,25 @@ class DashboardScreen extends StatelessWidget {
       children: [
         _buildActionCard(
           context,
-          'Penalty\nCalculator',
+          l10n.translate('penalty_calc'),
           Icons.calculate_outlined,
           Colors.orange,
-          () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const PenaltyCalculatorScreen()),
-          ),
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PenaltyCalculatorScreen()),
+            );
+          },
         ),
         _buildActionCard(
           context,
-          'Payment\nHistory',
+          l10n.translate('history'),
           Icons.history,
           Colors.blue,
-          () {},
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PenaltyHistoryScreen()),
+          ),
         ),
         _buildActionCard(
           context,

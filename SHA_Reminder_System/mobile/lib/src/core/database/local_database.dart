@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 class LocalDatabase {
   static Database? _database;
 
-  Future<Database> get database async {
+  Future<dynamic> get database async {
+    if (kIsWeb) return null; // sqflite doesn't work on web
     if (_database != null) return _database!;
     _database = await _initDB('sha_reminder.db');
     return _database!;
