@@ -99,7 +99,7 @@ class ReminderService:
 
         # Create reminder log
         reminder = ReminderLog(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             user_id=user.id,
             reminder_type=ReminderType(reminder_type),
             channel=ReminderChannel.SMS,

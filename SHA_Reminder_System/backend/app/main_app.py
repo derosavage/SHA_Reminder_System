@@ -23,4 +23,3 @@ def mount_frontend(app):
     static_path = frontend_path / "static"
     if static_path.exists():
         app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-</code></config>

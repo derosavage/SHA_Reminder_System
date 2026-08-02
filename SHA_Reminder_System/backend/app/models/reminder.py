@@ -9,7 +9,6 @@ from sqlalchemy import (
     Column, String, Boolean, DateTime, Enum as SQLEnum,
     Text, ForeignKey
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
@@ -34,9 +33,9 @@ class ReminderChannel(str, enum.Enum):
 class ReminderLog(Base):
     __tablename__ = "reminder_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(
-        UUID(as_uuid=True),
+        String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True

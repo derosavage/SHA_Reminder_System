@@ -45,7 +45,7 @@ class AuditService:
             The created AuditLog entry
         """
         audit_entry = AuditLog(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             user_id=user_id,
             action=action,
             resource_type=resource_type,

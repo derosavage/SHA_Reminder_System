@@ -38,3 +38,13 @@ data/
 
 # Trading bot specific
 config/settings.json
+
+# Flutter/Dart build caches
+**.gradle/
+mobile/android/app/.gradle/
+mobile/.dart_tool/
+mobile/build/
+
+# Temporary files
+commit_msg.txt
+*.local

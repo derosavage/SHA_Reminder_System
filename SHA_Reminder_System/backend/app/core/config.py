@@ -24,10 +24,10 @@ class Settings(BaseSettings):
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Security
-    SECRET_KEY: str = os.getenv(
-        "SECRET_KEY",
-        "change-this-in-production-use-a-256-bit-key-here"
-    )
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
+    ALLOW_INSECURE_DEFAULTS: bool = os.getenv(
+        "ALLOW_INSECURE_DEFAULTS", "true"
+    ).lower() == "true"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     OTP_EXPIRY_MINUTES: int = 5
     ALGORITHM: str = "HS256"
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     )  # sandbox or production
     MPESA_CALLBACK_URL: str = os.getenv(
         "MPESA_CALLBACK_URL",
-        "https://your-domain.com/api/v1/mpesa/callback"
+        "https://your-domain.com/api/v1/payments/callback"
     )
 
     # Africa's Talking SMS
@@ -84,6 +84,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
+        "http://localhost:5173",
         "https://sha-reminder.vercel.app",
     ]
 

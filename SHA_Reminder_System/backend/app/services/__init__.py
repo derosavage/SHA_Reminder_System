@@ -1,9 +1,8 @@
-from app.services.penalty_service import PenaltyService
-from app.services.auth_service import AuthService
-from app.services.mpesa_service import MpesaService
-from app.services.sms_service import SMSService
-from app.services.reminder_service import ReminderService
-from app.services.audit_service import AuditService
+# Service modules are imported lazily by the API routes that use them.
+# Avoid eager imports here so that importing a single service (e.g. for
+# tests) does not pull in the full dependency stack (httpx, celery, etc.).
+# Example usage:
+#   from app.services.penalty_service import PenaltyService
 
 __all__ = [
     "PenaltyService",

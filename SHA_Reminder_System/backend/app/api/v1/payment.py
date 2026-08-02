@@ -52,7 +52,7 @@ async def initiate_stk_push(
         from datetime import datetime
 
         transaction = Transaction(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             user_id=user_id,
             transaction_type=TransactionType.MPESA,
             status=TransactionStatus.PENDING,

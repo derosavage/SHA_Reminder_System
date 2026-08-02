@@ -48,7 +48,13 @@ class PenaltyService:
 
         Returns:
             Dict with calculation results and per-month breakdown
+
+        Raises:
+            ValueError: If missed_months is less than 1
         """
+        if missed_months < 1:
+            raise ValueError("Missed months must be at least 1")
+
         # Cap months to avoid astronomical penalties
         months = min(missed_months, PenaltyService.MAX_MONTHS)
         rate = PenaltyService.PENALTY_RATE
@@ -107,7 +113,7 @@ class PenaltyService:
         Save a penalty calculation to the database for audit trail.
         """
         calc = PenaltyCalculation(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             user_id=user_id,
             missed_months=missed_months,
             monthly_contribution=monthly_contribution,

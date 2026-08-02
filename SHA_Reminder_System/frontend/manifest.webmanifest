@@ -1,0 +1,51 @@
+{
+  "name": "SHA Reminder - Kikumbusho cha Malipo",
+  "short_name": "SHA Reminder",
+  "description": "Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#00B843",
+  "theme_color": "#00B843",
+  "lang": "sw",
+  "dir": "ltr",
+  "categories": ["finance", "health", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kokotoa Adhabu",
+      "short_name": "Adhabu",
+      "description": "Hesabu adhabu ya malipo ya SHA",
+      "url": "/#penalty",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lipa M-Pesa",
+      "short_name": "Lipa",
+      "description": "Lipa SHA kwa M-Pesa Paybill 200222",
+      "url": "/#pay",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

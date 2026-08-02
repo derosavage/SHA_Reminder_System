@@ -160,7 +160,7 @@ async def delete_my_account(
     db: AsyncSession = Depends(get_db),
 ):
     """Delete the authenticated user's account (Data Protection Act compliance)."""
-    from app.models.user import User
+    from app.models.user import User, UserStatus
     from app.models.audit import AuditLog, AuditAction
     from sqlalchemy import select
     from datetime import datetime
@@ -175,13 +175,13 @@ async def delete_my_account(
 
     # Soft delete: mark as deleted instead of removing
     user.deleted_at = datetime.utcnow()
-    user.status = "deleted"
+    user.status = UserStatus.DELETED
     user.phone_number = f"deleted_{user.id}_{user.phone_number}"
     user.national_id = f"deleted_{user.id}_{user.national_id}"
 
     # Log deletion
     audit = AuditLog(
-        id=uuid.uuid4(),
+        id=str(uuid.uuid4()),
         user_id=user_id,
         action=AuditAction.ACCOUNT_DELETED,
         resource_type="user",

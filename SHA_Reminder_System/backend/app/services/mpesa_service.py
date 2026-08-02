@@ -213,6 +213,19 @@ class MpesaService:
                 transaction.result_code = result_code
                 transaction.result_description = result_description
 
+                # Update the user's last contribution date for eligibility tracking
+                from app.models.user import User
+                user_query = select(User).where(User.id == transaction.user_id)
+                user_result = await db.execute(user_query)
+                user = user_result.scalar_one_or_none()
+                if user:
+                    user.last_contribution_date = transaction.completed_at
+                    user.eligibility_status = "active"
+                    logger.info(
+                        f"Updated user {user.id} last contribution date to "
+                        f"{transaction.completed_at.isoformat()}"
+                    )
+
                 logger.info(
                     f"Payment completed: {metadata.get('MpesaReceiptNumber')}, "
                     f"KES {metadata.get('Amount')}"

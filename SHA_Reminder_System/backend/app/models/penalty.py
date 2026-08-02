@@ -8,7 +8,6 @@ from datetime import datetime
 from sqlalchemy import (
     Column, String, DateTime, Float, Integer, ForeignKey, Text, JSON
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -16,9 +15,9 @@ from app.core.database import Base
 class PenaltyCalculation(Base):
     __tablename__ = "penalty_calculations"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(
-        UUID(as_uuid=True),
+        String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True

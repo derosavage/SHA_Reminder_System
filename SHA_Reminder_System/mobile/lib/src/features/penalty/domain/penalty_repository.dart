@@ -28,15 +28,35 @@ class PenaltyRepository {
   }) async {
     PenaltyCalculationResult result;
     try {
-      final data = await _apiService.calculatePenalty(
+      final response = await _apiService.calculatePenalty(
         missedMonths: missedMonths,
         monthlyContribution: monthlyContribution,
       );
 
+      // Backend POST /penalty/calculate returns:
+      // {
+      //   "success": true,
+      //   "data": {
+      //     "calculation_id": "...",
+      //     "missed_months": 3,
+      //     "monthly_contribution": 300.0,
+      //     "total_contributions_due": 900.0,
+      //     "penalty_amount": 18.0,
+      //     "penalty_rate_applied": 0.02,
+      //     "total_amount_due": 918.0,
+      //     "months_breakdown": [...],
+      //     "formula_reference": "..."
+      //   }
+      // }
+      final data =
+          (response['data'] is Map<String, dynamic>)
+              ? response['data'] as Map<String, dynamic>
+              : response;
+
       result = PenaltyCalculationResult(
         totalPenalty: (data['penalty_amount'] ?? 0.0).toDouble(),
         totalDue: (data['total_amount_due'] ?? 0.0).toDouble(),
-        breakdown: data['months_breakdown'] ?? [],
+        breakdown: (data['months_breakdown'] as List<dynamic>?) ?? [],
         isOffline: false,
       );
     } catch (e) {

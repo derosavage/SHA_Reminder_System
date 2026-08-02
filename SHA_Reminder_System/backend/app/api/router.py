@@ -8,15 +8,24 @@ from app.api.v1 import auth, penalty, payment, reminder, users
 
 api_router = APIRouter()
 
-# Health check
+health_payload = {
+    "status": "healthy",
+    "service": "SHA Reminder & Penalty Estimation System",
+    "version": "1.0.0",
+}
+
+
 @api_router.get("/health", tags=["health"])
 async def health_check():
-    """API health check endpoint."""
-    return {
-        "status": "healthy",
-        "service": "SHA Reminder & Penalty Estimation System",
-        "version": "1.0.0",
-    }
+    """Health check endpoint (aliased at /api/v1/health for tooling)."""
+    return health_payload
+
+
+@api_router.get("/api/v1/health", tags=["health"])
+async def health_check_v1():
+    """Health check endpoint (versioned alias used by scripts/docs)."""
+    return health_payload
+
 
 # V1 API Routes
 api_router.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])

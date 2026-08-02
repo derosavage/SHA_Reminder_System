@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>SHA Reminder - Kikumbusho cha Malipo</title>
+<!-- PWA -->
+<meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.">
+<meta name="theme-color" content="#00B843">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SHA Reminder">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
+<!-- Apple iOS splash screens (uses existing icons with green background) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -63,6 +75,17 @@ td{padding:10px 8px;border-bottom:1px solid var(--line)}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 24px;border-radius:999px;font-size:13px;z-index:30;display:none;white-space:nowrap}
 ol{padding-left:20px;line-height:1.9;font-size:14px;color:#3a4a40}
 .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+/* PWA Install UI */
+#installFab{position:fixed;right:16px;bottom:110px;z-index:200;background:var(--green-dark);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:700;cursor:pointer;display:none;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,184,67,.4);transition:transform .15s}
+#installFab:hover{transform:scale(1.05)}
+#installFab .ico{font-size:18px}
+#installFab.hide{display:none!important}
+#installModal{position:fixed;inset:0;background:rgba(10,31,18,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+#installModal.show{display:flex}
+#installModal .box{background:#fff;border-radius:20px;max-width:340px;width:100%;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+#installModal h3{font-size:18px;margin-bottom:10px;color:var(--ink)}
+#installModal ol{text-align:left;font-size:14px;color:#3a4a40;padding-left:18px;line-height:1.9}
+#installModal .close{margin-top:16px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
 </style>
 </head>
 <body>
@@ -181,6 +204,21 @@ Penalty = &Sigma;(amount &times; 0.02 &times; months late)
 </div>
 </div>
 </div>
+<!-- PWA Install UI -->
+<button id="installFab" onclick="promptInstall()"><span class="ico">&#11015;</span> Sakinisha App</button>
+<div id="installModal" onclick="if(event.target===this)closeInstall()">
+  <div class="box">
+    <h3>&#128241; Sakinisha SHA Reminder</h3>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Ili kupata toleo la app linalofanya kazi bila mtandao, fuata hatua hizi:</p>
+    <ol>
+      <li>Fungua menyu ya <strong>Shiriki</strong> (Share) kwenye kivinjari</li>
+      <li>Chagua <strong>"Ongeza kwenye Skrini ya Nyumbani"</strong> (Add to Home Screen)</li>
+      <li>Bofya <strong>Ongeza</strong> (Add)</li>
+    </ol>
+    <button class="close" onclick="closeInstall()">&#10005; Funga</button>
+  </div>
+</div>
+
 <nav class="nav">
 <button class="nav-item active" data-s="dash" onclick="go('dash')"><span class="icon">&#127968;</span>Nyumbani</button>
 <button class="nav-item" data-s="penalty" onclick="go('penalty')"><span class="icon">&#129518;</span>Adhabu</button>
@@ -204,6 +242,33 @@ document.getElementById('penaltyForm').addEventListener('submit',function(e){e.p
 function checkOnline(){document.getElementById('offlineBar').classList.toggle('show',!navigator.onLine)}
 window.addEventListener('online',checkOnline);window.addEventListener('offline',checkOnline);checkOnline();
 setTimeout(()=>{if(calcs.length===0){const r=calc(3,300);calcs.unshift({...r,date:new Date().toLocaleString('sw-KE')});renderHist()}},500);
+// PWA - Service Worker registration & install prompt
+const installFab=document.getElementById('installFab');
+const installModal=document.getElementById('installModal');
+let deferredPrompt=null;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function installFabShow(){installFab.style.display='inline-flex'}
+function installFabHide(){installFab.classList.add('hide')}
+function promptInstall(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;installFabHide()})}
+  else if(isIOS){installModal.classList.add('show')}
+  else{toast('Fungua menyu ya kivinjari na uchague "Sakinisha app"')}
+}
+function closeInstall(){installModal.classList.remove('show')}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.warn('SW registration failed:',e))});
+}
+// Show install button when browser fires beforeinstallprompt (Chrome/Android/Edge).
+window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;installFabShow()});
+// On iOS there is no beforeinstallprompt, so always show the button (opens instructions modal).
+if(isIOS&&!isStandalone){installFabShow()}
+// Hide after app is installed or already running as an installed app.
+window.addEventListener('appinstalled',()=>{installFabHide()});
+if(isStandalone){installFabHide()}
+// Hash-based tab routing so PWA shortcuts (#penalty, #pay) open the right tab
+function routeFromHash(){const h=location.hash.replace('#','');if(h&&['dash','penalty','pay','hist','info'].includes(h))go(h)}
+window.addEventListener('hashchange',routeFromHash);routeFromHash();
 </script>
 </body>
 </html>

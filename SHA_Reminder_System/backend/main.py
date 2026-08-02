@@ -12,10 +12,21 @@ from fastapi.responses import FileResponse
 from loguru import logger
 import sys
 from pathlib import Path
+import mimetypes
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.api.router import api_router
+
+
+def validate_security_settings():
+    """Validate security-critical settings at startup."""
+    if not settings.SECRET_KEY and not settings.ALLOW_INSECURE_DEFAULTS:
+        raise RuntimeError(
+            "SECRET_KEY is not set. Set SECRET_KEY in your environment "
+            "or .env file before starting the application."
+        )
 
 
 def configure_logging():
@@ -42,6 +53,7 @@ def configure_logging():
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events."""
     configure_logging()
+    validate_security_settings()
     logger.info("Initializing database...")
     try:
         await init_db()
@@ -72,9 +84,15 @@ app = FastAPI(
 )
 
 # CORS middleware
+# Allow credentials only for specific origins (wildcard "*" + credentials is
+# rejected by browsers). In DEBUG mode, fall back to a permissive localhost list.
+cors_origins = settings.CORS_ORIGINS or []
+if settings.DEBUG:
+    cors_origins = list(cors_origins)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,18 +102,49 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Include API routes under /api
 app.include_router(api_router)
 
-# Serve the HTML app at root
+# Serve the HTML app at root (both "/" and "/index.html" since the service
+# worker pre-caches "/index.html" explicitly in its APP_SHELL list).
 @app.get("/", include_in_schema=False)
+@app.get("/index.html", include_in_schema=False)
 async def serve_app():
     index_file = frontend_path / "index.html"
     if index_file.exists():
         return FileResponse(str(index_file))
     return {"message": "SHA Reminder System - Frontend not found. Open frontend/index.html directly."}
 
+
+# PWA support: service worker, manifest, and app icons.
+# The service worker MUST be served at the top-level scope ("/") so it can
+# intercept requests for the whole app (sub-path SWs cannot control "/").
+@app.get("/sw.js", include_in_schema=False)
+async def serve_sw():
+    sw_file = frontend_path / "sw.js"
+    if sw_file.exists():
+        return FileResponse(str(sw_file), media_type="application/javascript")
+    return {"message": "Service worker not found"}
+
+
+@app.get("/manifest.webmanifest", include_in_schema=False)
+async def serve_manifest():
+    manifest_file = frontend_path / "manifest.webmanifest"
+    if manifest_file.exists():
+        return FileResponse(str(manifest_file), media_type="application/manifest+json")
+    return {"message": "Manifest not found"}
+
+
 # Serve static assets if they exist
 static_path = frontend_path / "static"
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+
+# Serve PWA icons directory if it exists
+icons_path = frontend_path / "icons"
+if icons_path.exists():
+    app.mount(
+        "/icons",
+        StaticFiles(directory=str(icons_path)),
+        name="icons",
+    )
 
 
 if __name__ == "__main__":

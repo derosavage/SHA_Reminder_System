@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.schemas.user import UserCreate, UserResponse, VerifyOTP, UserLogin
 from app.services.auth_service import AuthService
 from app.services.sms_service import SMSService
@@ -27,18 +28,24 @@ async def register(
         user, otp = await AuthService.register_user(db, user_data)
 
         # Send OTP via SMS (in production, actually send)
-        await SMSService.send_otp(user.phone_number, otp)
+        sms_sent = await SMSService.send_otp(user.phone_number, otp)
 
         logger.info(f"User registered: {user.phone_number}")
-        return {
+        response = {
             "success": True,
             "message": "Registration successful. Check SMS for OTP.",
             "data": {
                 "user_id": str(user.id),
                 "phone_number": user.phone_number,
-                "otp_sent": True,
+                "otp_sent": sms_sent,
             },
         }
+        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
+        # so local testing remains possible. Gated behind ALLOW_INSECURE_DEFAULTS
+        # (default true for development; production must set it to false).
+        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+            response["data"]["debug_otp"] = otp
+        return response
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -91,11 +98,15 @@ async def resend_otp(
 
     try:
         otp = await AuthService.request_new_otp(db, phone_number)
-        await SMSService.send_otp(phone_number, otp)
-        return {
+        sms_sent = await SMSService.send_otp(phone_number, otp)
+        response = {
             "success": True,
             "message": "New OTP sent successfully.",
         }
+        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
+        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+            response["debug_otp"] = otp
+        return response
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -119,13 +130,17 @@ async def login(
 
         # Send OTP for login
         otp = await AuthService.request_new_otp(db, login_data.phone_number)
-        await SMSService.send_otp(user.phone_number, otp)
+        sms_sent = await SMSService.send_otp(user.phone_number, otp)
 
-        return {
+        response = {
             "success": True,
             "message": "OTP sent to your phone.",
             "data": {"user_id": str(user.id)},
         }
+        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
+        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+            response["data"]["debug_otp"] = otp
+        return response
     except HTTPException:
         raise
     except Exception as e:

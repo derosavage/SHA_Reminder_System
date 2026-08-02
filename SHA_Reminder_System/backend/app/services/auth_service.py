@@ -4,7 +4,8 @@ Handles OTP verification, phone registration, and JWT token management.
 """
 
 import uuid
-import random
+import hashlib
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 from jose import jwt, JWTError
@@ -22,8 +23,23 @@ class AuthService:
 
     @staticmethod
     def generate_otp(length: int = 5) -> str:
-        """Generate a 5-digit OTP code."""
-        return str(random.randint(10000, 99999))[:length]
+        """Generate a cryptographically secure 5-digit OTP code."""
+        return f"{secrets.randbelow(10 ** length):0{length}d}"
+
+    @staticmethod
+    def _hash_otp(otp: str) -> str:
+        """Hash an OTP using SHA-256 with a salt (never store plaintext)."""
+        salt = settings.SECRET_KEY or "sha-otp"
+        return hashlib.sha256(f"{salt}:{otp}".encode()).hexdigest()
+
+    @staticmethod
+    def _verify_otp(stored_hash: Optional[str], otp: str) -> bool:
+        """Verify an OTP against its stored hash."""
+        if not stored_hash:
+            return False
+        return secrets.compare_digest(
+            stored_hash, AuthService._hash_otp(otp)
+        )
 
     @staticmethod
     def create_access_token(
@@ -80,7 +96,7 @@ class AuthService:
         # Create user
         otp = AuthService.generate_otp()
         user = User(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             national_id=user_data.national_id,
             phone_number=user_data.phone_number,
             full_name=user_data.full_name,
@@ -89,7 +105,7 @@ class AuthService:
             status=UserStatus.PENDING,
             contribution_amount=settings.SHA_MINIMUM_CONTRIBUTION,
             preferred_language=user_data.preferred_language,
-            otp_secret=otp,
+            otp_secret=AuthService._hash_otp(otp),
             otp_expiry=datetime.utcnow() + timedelta(
                 minutes=settings.OTP_EXPIRY_MINUTES
             ),
@@ -120,7 +136,7 @@ class AuthService:
         if user.is_phone_verified:
             raise ValueError("Phone number already verified")
 
-        if user.otp_secret != otp_code:
+        if not AuthService._verify_otp(user.otp_secret, otp_code):
             user.failed_login_attempts += 1
             await db.commit()
             raise ValueError("Invalid OTP code")
@@ -130,6 +146,7 @@ class AuthService:
 
         # Mark phone as verified and activate account
         user.is_phone_verified = True
+        user.is_verified = True
         user.status = UserStatus.ACTIVE
         user.otp_secret = None
         user.otp_expiry = None
@@ -154,7 +171,7 @@ class AuthService:
             raise ValueError("User not found")
 
         otp = AuthService.generate_otp()
-        user.otp_secret = otp
+        user.otp_secret = AuthService._hash_otp(otp)
         user.otp_expiry = datetime.utcnow() + timedelta(
             minutes=settings.OTP_EXPIRY_MINUTES
         )
