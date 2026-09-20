@@ -86,6 +86,45 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:#3a4a40}
 #installModal h3{font-size:18px;margin-bottom:10px;color:var(--ink)}
 #installModal ol{text-align:left;font-size:14px;color:#3a4a40;padding-left:18px;line-height:1.9}
 #installModal .close{margin-top:16px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+
+/* ===== Tablet (>=768px): wider layout, bottom nav stays but content breathes ===== */
+@media (min-width:768px){
+  .container{max-width:700px;padding:20px 24px}
+  header{padding:22px 24px}
+  header h1{font-size:20px}
+  .grid-2{grid-template-columns:repeat(4,1fr)}
+  .hero .value{font-size:38px}
+  .hero{padding:28px}
+  .card{padding:24px}
+}
+
+/* ===== Desktop / PC (>=1024px): sidebar nav + 2-column section layouts ===== */
+@media (min-width:1024px){
+  body{padding-bottom:0;padding-left:240px}
+  header{position:sticky}
+  .container{max-width:1040px;padding:32px 40px}
+  .offline-bar{padding:8px 24px}
+
+  /* Bottom tab bar becomes a left sidebar */
+  .nav{position:fixed;top:0;left:0;right:auto;bottom:0;width:240px;height:100vh;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:96px 0 24px;box-shadow:2px 0 20px rgba(10,31,18,.05)}
+  .nav-item{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;text-align:left;padding:14px 28px;font-size:14px}
+  .nav-item .icon{font-size:20px;margin-bottom:0}
+  .nav-item.active::after{top:8px;bottom:8px;left:0;right:auto;width:3px;height:auto;transform:none;border-radius:0 3px 3px 0}
+
+  /* Install FAB / toast no longer need to clear a bottom nav */
+  #installFab{bottom:24px}
+  .toast{bottom:24px}
+
+  /* Dashboard: hero + quick actions side by side, summary spans below */
+  #s-dash.active{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+  #s-dash.active .hero{grid-column:1;grid-row:1;margin-bottom:0}
+  #s-dash.active .grid-2{grid-column:2;grid-row:1;grid-template-columns:repeat(2,1fr);margin-bottom:0}
+  #s-dash.active .card{grid-column:1/-1;grid-row:2;margin-bottom:0}
+
+  /* Penalty, Pay & Info: two cards side by side instead of stacked */
+  #s-penalty.active,#s-pay.active,#s-info.active{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  #s-penalty.active .card,#s-pay.active .card,#s-pay.active .paybill-box,#s-info.active .card{margin-bottom:0}
+}
 </style>
 </head>
 <body>
