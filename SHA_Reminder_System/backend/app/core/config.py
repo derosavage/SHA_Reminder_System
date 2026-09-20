@@ -68,6 +68,10 @@ class Settings(BaseSettings):
         "MPESA_CALLBACK_URL",
         "https://your-domain.com/api/v1/payments/callback"
     )
+    # Shared secret appended to the callback URL as ?token=... so the
+    # /payments/callback endpoint can reject requests that don't originate
+    # from our own STK Push request (Daraja does not sign callbacks).
+    MPESA_CALLBACK_TOKEN: str = os.getenv("MPESA_CALLBACK_TOKEN", "")
 
     # Africa's Talking SMS
     AT_API_KEY: str = os.getenv("AT_API_KEY", "")
@@ -101,3 +105,11 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# A blank SECRET_KEY would let anyone forge JWTs signed with an empty HS256
+# key. In insecure-defaults (dev) mode, generate a random one for this
+# process instead of running unsigned; in production mode, leave it blank so
+# validate_security_settings() at startup refuses to boot.
+if not settings.SECRET_KEY and settings.ALLOW_INSECURE_DEFAULTS:
+    import secrets as _secrets
+    settings.SECRET_KEY = _secrets.token_hex(32)

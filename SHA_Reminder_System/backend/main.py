@@ -27,6 +27,18 @@ def validate_security_settings():
             "SECRET_KEY is not set. Set SECRET_KEY in your environment "
             "or .env file before starting the application."
         )
+    if not settings.MPESA_CALLBACK_TOKEN and not settings.ALLOW_INSECURE_DEFAULTS:
+        raise RuntimeError(
+            "MPESA_CALLBACK_TOKEN is not set. Set MPESA_CALLBACK_TOKEN in "
+            "your environment before starting the application, so the "
+            "/payments/callback endpoint can reject forged callbacks."
+        )
+    if settings.ALLOW_INSECURE_DEFAULTS:
+        logger.warning(
+            "ALLOW_INSECURE_DEFAULTS is enabled: OTPs may be echoed in API "
+            "responses and/or M-Pesa callbacks are unauthenticated. "
+            "Set ALLOW_INSECURE_DEFAULTS=false in production."
+        )
 
 
 def configure_logging():

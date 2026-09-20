@@ -8,6 +8,7 @@ import base64
 import json
 from datetime import datetime
 from typing import Optional, Dict, Any
+from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
@@ -29,6 +30,23 @@ class MpesaService:
         return self.BASE_URLS.get(
             settings.MPESA_ENVIRONMENT, self.BASE_URLS["sandbox"]
         )
+
+    @staticmethod
+    def _callback_url() -> str:
+        """
+        Build the callback URL sent to Safaricom, with our shared
+        MPESA_CALLBACK_TOKEN attached as a query param. Daraja does not sign
+        its callbacks, so /payments/callback uses this token to reject
+        requests that didn't originate from our own STK Push call.
+        """
+        url = settings.MPESA_CALLBACK_URL
+        if not settings.MPESA_CALLBACK_TOKEN:
+            return url
+
+        parts = urlsplit(url)
+        query = dict(parse_qsl(parts.query))
+        query["token"] = settings.MPESA_CALLBACK_TOKEN
+        return urlunsplit(parts._replace(query=urlencode(query)))
 
     async def _get_oauth_token(self) -> Optional[str]:
         """
@@ -97,7 +115,7 @@ class MpesaService:
             "PartyA": phone_number,
             "PartyB": settings.MPESA_BUSINESS_SHORTCODE,
             "PhoneNumber": phone_number,
-            "CallBackURL": settings.MPESA_CALLBACK_URL,
+            "CallBackURL": self._callback_url(),
             "AccountReference": account_reference,
             "TransactionDesc": transaction_desc,
         }

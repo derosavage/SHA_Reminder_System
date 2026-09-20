@@ -3,11 +3,14 @@ M-Pesa Payment API Routes
 Handles STK Push initiation and payment history.
 """
 
+import secrets as secrets_module
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from loguru import logger
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.schemas.transaction import (
     MpesaSTKPushRequest,
@@ -85,12 +88,34 @@ async def initiate_stk_push(
 @router.post("/callback", response_model=dict)
 async def mpesa_callback(
     callback_data: dict,
+    token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """
     M-Pesa callback endpoint.
     Safaricom sends payment confirmation here after STK Push.
+
+    Daraja does not sign its callbacks, so we authenticate the caller via a
+    shared secret (MPESA_CALLBACK_TOKEN) embedded in the callback URL we
+    hand to Safaricom during STK Push. Without this, anyone who guesses a
+    valid CheckoutRequestID could POST a fake "success" callback and mark a
+    transaction (and the user's SHA eligibility) as paid for free.
     """
+    if settings.MPESA_CALLBACK_TOKEN:
+        if not token or not secrets_module.compare_digest(
+            token, settings.MPESA_CALLBACK_TOKEN
+        ):
+            logger.warning("M-Pesa callback rejected: invalid or missing token")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid callback token",
+            )
+    else:
+        logger.warning(
+            "M-Pesa callback accepted WITHOUT verification: "
+            "MPESA_CALLBACK_TOKEN is not configured"
+        )
+
     logger.info(f"M-Pesa callback received: {callback_data}")
 
     transaction = await MpesaService.process_callback(db, callback_data)
