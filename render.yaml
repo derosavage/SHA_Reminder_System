@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: sha-reminder-api
+    runtime: python
+    plan: free
+    rootDir: SHA_Reminder_System/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      # Test deploy: SQLite (ephemeral) and OTP shown in API responses (no SMS configured).
+      # Set to "false" and provide DATABASE_URL / AT_API_KEY before real use.
+      - key: ALLOW_INSECURE_DEFAULTS
+        value: "true"
+      - key: MPESA_ENVIRONMENT
+        value: sandbox

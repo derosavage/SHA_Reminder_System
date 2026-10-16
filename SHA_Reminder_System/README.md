@@ -18,7 +18,6 @@ A digital platform that helps Kenyan citizens manage their Social Health Authori
 - Share paybill via WhatsApp/SMS
 - SMS reminders via Africa's Talking
 - Payment guidance and instructions
-
 ### P2 - Post-Launch
 - Push notifications (Firebase)
 - WhatsApp reminders (Business API)
@@ -123,6 +122,8 @@ celery -A app.core.celery_config beat -l info
 | `GET` | `/api/v1/payments/paybill` | Paybill info |
 | `POST` | `/api/v1/reminders/send` | Send reminder |
 | `GET` | `/api/v1/reminders/history` | Reminder history |
+
+
 
 ## 🧮 Penalty Calculation Formula
 
