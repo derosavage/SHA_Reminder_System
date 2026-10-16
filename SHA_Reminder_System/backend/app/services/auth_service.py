@@ -18,6 +18,11 @@ from app.models.user import User, UserRole, UserStatus
 from app.schemas.user import UserCreate, UserResponse
 
 
+MAX_OTP_ATTEMPTS = 5
+OTP_LOCKOUT_MINUTES = 15
+OTP_RESEND_COOLDOWN_SECONDS = 60
+
+
 class AuthService:
     """Service for user authentication and registration."""
 
@@ -130,27 +135,42 @@ class AuthService:
         result = await db.execute(query)
         user = result.scalar_one_or_none()
 
+        # Same generic message for unknown users and bad codes (no enumeration).
         if not user:
-            raise ValueError("User not found")
-
-        if user.is_phone_verified:
-            raise ValueError("Phone number already verified")
-
-        if not AuthService._verify_otp(user.otp_secret, otp_code):
-            user.failed_login_attempts += 1
-            await db.commit()
             raise ValueError("Invalid OTP code")
 
-        if user.otp_expiry and user.otp_expiry < datetime.utcnow():
+        now = datetime.utcnow()
+        if user.locked_until and user.locked_until > now:
+            raise ValueError(
+                "Too many failed attempts. Try again in a few minutes."
+            )
+
+        if not user.otp_secret:
+            raise ValueError("No active OTP. Please request a new one.")
+
+        if user.otp_expiry and user.otp_expiry < now:
             raise ValueError("OTP has expired. Please request a new one.")
+
+        if not AuthService._verify_otp(user.otp_secret, otp_code):
+            user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+            if user.failed_login_attempts >= MAX_OTP_ATTEMPTS:
+                # Burn the OTP and lock the account so it can't be brute-forced.
+                user.otp_secret = None
+                user.otp_expiry = None
+                user.failed_login_attempts = 0
+                user.locked_until = now + timedelta(minutes=OTP_LOCKOUT_MINUTES)
+            await db.commit()
+            raise ValueError("Invalid OTP code")
 
         # Mark phone as verified and activate account
         user.is_phone_verified = True
         user.is_verified = True
-        user.status = UserStatus.ACTIVE
+        if user.status == UserStatus.PENDING:
+            user.status = UserStatus.ACTIVE
         user.otp_secret = None
         user.otp_expiry = None
         user.failed_login_attempts = 0
+        user.locked_until = None
         await db.commit()
         await db.refresh(user)
 
@@ -161,20 +181,33 @@ class AuthService:
     async def request_new_otp(
         db: AsyncSession,
         phone_number: str,
-    ) -> str:
-        """Request a new OTP code."""
+    ) -> Optional[str]:
+        """Request a new OTP code. Returns None if the phone is unknown."""
         query = select(User).where(User.phone_number == phone_number)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
 
         if not user:
-            raise ValueError("User not found")
+            return None
+
+        now = datetime.utcnow()
+        if user.locked_until and user.locked_until > now:
+            raise ValueError(
+                "Too many failed attempts. Try again in a few minutes."
+            )
+        if user.otp_expiry:
+            sent_at = user.otp_expiry - timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
+            if (now - sent_at).total_seconds() < OTP_RESEND_COOLDOWN_SECONDS:
+                raise ValueError(
+                    "Please wait a minute before requesting another OTP."
+                )
 
         otp = AuthService.generate_otp()
         user.otp_secret = AuthService._hash_otp(otp)
-        user.otp_expiry = datetime.utcnow() + timedelta(
+        user.otp_expiry = now + timedelta(
             minutes=settings.OTP_EXPIRY_MINUTES
         )
+        user.failed_login_attempts = 0
         await db.commit()
 
         logger.info(f"New OTP sent to: {phone_number}")

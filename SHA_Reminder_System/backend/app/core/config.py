@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "")
     ALLOW_INSECURE_DEFAULTS: bool = os.getenv(
-        "ALLOW_INSECURE_DEFAULTS", "true"
+        "ALLOW_INSECURE_DEFAULTS", "false"
     ).lower() == "true"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     OTP_EXPIRY_MINUTES: int = 5
@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     MPESA_ENVIRONMENT: str = os.getenv(
         "MPESA_ENVIRONMENT", "sandbox"
     )  # sandbox or production
+    # Shared secret Safaricom must echo back as ?token=... on the callback URL.
+    MPESA_CALLBACK_SECRET: str = os.getenv("MPESA_CALLBACK_SECRET", "")
     MPESA_CALLBACK_URL: str = os.getenv(
         "MPESA_CALLBACK_URL",
         "https://your-domain.com/api/v1/payments/callback"
@@ -101,3 +103,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Never sign tokens with an empty key: in insecure/dev mode fall back to a
+# random per-process key (tokens are invalidated on restart).
+if not settings.SECRET_KEY and settings.ALLOW_INSECURE_DEFAULTS:
+    import secrets as _secrets
+
+    settings.SECRET_KEY = _secrets.token_urlsafe(48)

@@ -196,6 +196,10 @@ class MpesaService:
                 logger.error(f"Transaction not found: {checkout_request_id}")
                 return None
 
+            if transaction.status == TransactionStatus.COMPLETED:
+                logger.info(f"Duplicate callback ignored: {checkout_request_id}")
+                return transaction
+
             if result_code == 0:
                 # Success - extract payment details
                 callback_metadata = stk_callback.get("CallbackMetadata", {}).get(

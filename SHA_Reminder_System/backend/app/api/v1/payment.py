@@ -16,7 +16,11 @@ from app.schemas.transaction import (
 )
 from app.services.mpesa_service import MpesaService
 from app.services.auth_service import AuthService
+import secrets
+import re
+from app.core.config import settings
 from app.utils.dependencies import get_current_user_id, get_optional_user_id
+from app.utils.rate_limit import rate_limit, check_rate_limit
 
 router = APIRouter()
 mpesa_service = MpesaService()
@@ -25,6 +29,7 @@ mpesa_service = MpesaService()
 @router.post("/stk-push", response_model=dict)
 async def initiate_stk_push(
     request: MpesaSTKPushRequest,
+    _rl: None = Depends(rate_limit("stk", 5)),
     user_id: Optional[str] = Depends(get_optional_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -32,6 +37,14 @@ async def initiate_stk_push(
     Initiate M-Pesa STK Push payment to Paybill 200222.
     Sends a payment request to the user's phone.
     """
+    if not re.fullmatch(r"254[17]\d{8}", request.phone_number):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Phone number must be in 254XXXXXXXXX format.",
+        )
+    # Stop the endpoint being used to spam prompts at one phone number.
+    check_rate_limit(f"stk-phone:{request.phone_number}", 3, 600)
+
     result = await mpesa_service.stk_push(
         phone_number=request.phone_number,
         amount=request.amount,
@@ -85,13 +98,26 @@ async def initiate_stk_push(
 @router.post("/callback", response_model=dict)
 async def mpesa_callback(
     callback_data: dict,
+    token: str = Query("", description="Shared secret configured in the callback URL"),
     db: AsyncSession = Depends(get_db),
 ):
     """
     M-Pesa callback endpoint.
     Safaricom sends payment confirmation here after STK Push.
     """
-    logger.info(f"M-Pesa callback received: {callback_data}")
+    # Reject forged callbacks: Safaricom must echo the secret we put in the URL.
+    expected = settings.MPESA_CALLBACK_SECRET
+    if expected:
+        if not secrets.compare_digest(token, expected):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+            )
+    elif not settings.ALLOW_INSECURE_DEFAULTS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+        )
+
+    logger.info("M-Pesa callback received")
 
     transaction = await MpesaService.process_callback(db, callback_data)
 

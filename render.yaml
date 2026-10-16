@@ -18,5 +18,7 @@ services:
       # Set to "false" and provide DATABASE_URL / AT_API_KEY before real use.
       - key: ALLOW_INSECURE_DEFAULTS
         value: "true"
+      - key: MPESA_CALLBACK_SECRET
+        generateValue: true
       - key: MPESA_ENVIRONMENT
         value: sandbox

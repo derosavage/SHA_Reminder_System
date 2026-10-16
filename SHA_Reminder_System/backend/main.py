@@ -27,6 +27,18 @@ def validate_security_settings():
             "SECRET_KEY is not set. Set SECRET_KEY in your environment "
             "or .env file before starting the application."
         )
+    if not settings.ALLOW_INSECURE_DEFAULTS and (
+        len(settings.SECRET_KEY) < 32
+        or settings.SECRET_KEY.startswith("change-this")
+    ):
+        raise RuntimeError(
+            "SECRET_KEY is too short or still the example placeholder; "
+            "use a random value of at least 32 characters."
+        )
+    if not settings.ALLOW_INSECURE_DEFAULTS and not settings.MPESA_CALLBACK_SECRET:
+        logger.warning(
+            "MPESA_CALLBACK_SECRET is not set: M-Pesa callbacks will be rejected."
+        )
 
 
 def configure_logging():

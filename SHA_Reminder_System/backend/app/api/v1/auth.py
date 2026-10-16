@@ -13,8 +13,9 @@ from app.schemas.user import UserCreate, UserResponse, VerifyOTP, UserLogin
 from app.services.auth_service import AuthService
 from app.services.sms_service import SMSService
 from app.utils.dependencies import get_client_info
+from app.utils.rate_limit import rate_limit, check_rate_limit
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(rate_limit("auth", 10))])
 
 
 @router.post("/register", response_model=dict)
@@ -96,16 +97,18 @@ async def resend_otp(
             detail="Phone number is required",
         )
 
+    check_rate_limit(f"otp:{phone_number}", 3, 600)
     try:
         otp = await AuthService.request_new_otp(db, phone_number)
-        sms_sent = await SMSService.send_otp(phone_number, otp)
         response = {
             "success": True,
-            "message": "New OTP sent successfully.",
+            "message": "If the number is registered, a new OTP has been sent.",
         }
-        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
-        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
-            response["debug_otp"] = otp
+        if otp:
+            sms_sent = await SMSService.send_otp(phone_number, otp)
+            # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
+            if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+                response["debug_otp"] = otp
         return response
     except ValueError as e:
         raise HTTPException(
@@ -120,27 +123,27 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login with phone number (sends OTP)."""
+    check_rate_limit(f"otp:{login_data.phone_number}", 3, 600)
     try:
-        user = await AuthService.get_user_by_phone(db, login_data.phone_number)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
-
-        # Send OTP for login
-        otp = await AuthService.request_new_otp(db, login_data.phone_number)
-        sms_sent = await SMSService.send_otp(user.phone_number, otp)
-
+        # Identical response whether or not the number is registered, so the
+        # endpoint can't be used to discover registered users.
         response = {
             "success": True,
-            "message": "OTP sent to your phone.",
-            "data": {"user_id": str(user.id)},
+            "message": "If the number is registered, an OTP has been sent.",
+            "data": {},
         }
-        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
-        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
-            response["data"]["debug_otp"] = otp
+        otp = await AuthService.request_new_otp(db, login_data.phone_number)
+        if otp:
+            sms_sent = await SMSService.send_otp(login_data.phone_number, otp)
+            # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
+            if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+                response["data"]["debug_otp"] = otp
         return response
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
     except HTTPException:
         raise
     except Exception as e:
