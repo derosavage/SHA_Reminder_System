@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.models.reminder import ReminderLog, ReminderType, ReminderChannel
 from app.models.user import User
 from app.services.sms_service import SMSService
+from app.utils.time import utcnow
 
 
 class ReminderService:
@@ -23,7 +24,7 @@ class ReminderService:
     @staticmethod
     def get_upcoming_payment_date() -> str:
         """Get the next payment due date string."""
-        now = datetime.utcnow()
+        now = utcnow()
         if now.day < settings.SHA_PAYMENT_DEADLINE_DAY:
             # This month's deadline hasn't passed
             return f"{now.year}-{now.month:02d}-{settings.SHA_PAYMENT_DEADLINE_DAY:02d}"
@@ -120,7 +121,7 @@ class ReminderService:
 
         # Update status
         reminder.status = "sent" if sms_sent else "failed"
-        reminder.sent_at = datetime.utcnow() if sms_sent else None
+        reminder.sent_at = utcnow() if sms_sent else None
         await db.commit()
         await db.refresh(reminder)
 

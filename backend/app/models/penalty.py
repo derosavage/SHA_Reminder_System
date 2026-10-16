@@ -10,6 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.core.database import Base
+from app.utils.time import utcnow
 
 
 class PenaltyCalculation(Base):
@@ -38,13 +39,13 @@ class PenaltyCalculation(Base):
     calculation_breakdown = Column(JSON, nullable=True)
 
     # Metadata
-    calculation_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    calculation_date = Column(DateTime, default=utcnow, nullable=False)
     is_offline = Column(DateTime, nullable=True)  # Timestamp if calculated offline
     device_id = Column(String(100), nullable=True)
     ip_address = Column(String(45), nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="penalty_calculations")

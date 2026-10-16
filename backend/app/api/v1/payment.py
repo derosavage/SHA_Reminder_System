@@ -21,6 +21,7 @@ import re
 from app.core.config import settings
 from app.utils.dependencies import get_current_user_id, get_optional_user_id
 from app.utils.rate_limit import rate_limit, check_rate_limit
+from app.utils.time import utcnow
 
 router = APIRouter()
 mpesa_service = MpesaService()
@@ -95,7 +96,7 @@ async def initiate_stk_push(
             account_reference=request.account_reference,
             merchant_request_id=result.get("MerchantRequestID"),
             checkout_request_id=result.get("CheckoutRequestID"),
-            transaction_date=datetime.utcnow(),
+            transaction_date=utcnow(),
         )
         db.add(transaction)
         await db.commit()

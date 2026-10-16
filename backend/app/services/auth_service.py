@@ -16,6 +16,7 @@ from loguru import logger
 from app.core.config import settings
 from app.models.user import User, UserRole, UserStatus
 from app.schemas.user import UserCreate, UserResponse
+from app.utils.time import utcnow
 
 
 MAX_OTP_ATTEMPTS = 5
@@ -58,11 +59,11 @@ class AuthService:
             "role": role,
             "type": "access",
         }
-        expire = datetime.utcnow() + (
+        expire = utcnow() + (
             expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         to_encode["exp"] = expire
-        to_encode["iat"] = datetime.utcnow()
+        to_encode["iat"] = utcnow()
         return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
     @staticmethod
@@ -111,7 +112,7 @@ class AuthService:
             contribution_amount=settings.SHA_MINIMUM_CONTRIBUTION,
             preferred_language=user_data.preferred_language,
             otp_secret=AuthService._hash_otp(otp),
-            otp_expiry=datetime.utcnow() + timedelta(
+            otp_expiry=utcnow() + timedelta(
                 minutes=settings.OTP_EXPIRY_MINUTES
             ),
         )
@@ -139,7 +140,7 @@ class AuthService:
         if not user:
             raise ValueError("Invalid OTP code")
 
-        now = datetime.utcnow()
+        now = utcnow()
         if user.locked_until and user.locked_until > now:
             raise ValueError(
                 "Too many failed attempts. Try again in a few minutes."
@@ -190,7 +191,7 @@ class AuthService:
         if not user:
             return None
 
-        now = datetime.utcnow()
+        now = utcnow()
         if user.locked_until and user.locked_until > now:
             raise ValueError(
                 "Too many failed attempts. Try again in a few minutes."
@@ -241,7 +242,7 @@ class AuthService:
             if value is not None and hasattr(user, key):
                 setattr(user, key, value)
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = utcnow()
         await db.commit()
         await db.refresh(user)
         return user

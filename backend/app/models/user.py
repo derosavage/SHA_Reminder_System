@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
+from app.utils.time import utcnow
 
 
 class UserRole(str, enum.Enum):
@@ -66,8 +67,8 @@ class User(Base):
     reminder_day = Column(Integer, default=5)  # Day of month to remind
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     last_login_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True)
 
@@ -89,6 +90,6 @@ class User(Base):
     @property
     def is_locked(self) -> bool:
         """Check if account is temporarily locked."""
-        if self.locked_until and self.locked_until > datetime.utcnow():
+        if self.locked_until and self.locked_until > utcnow():
             return True
         return False

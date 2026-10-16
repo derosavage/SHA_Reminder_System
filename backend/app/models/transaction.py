@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
+from app.utils.time import utcnow
 
 
 class TransactionStatus(str, enum.Enum):
@@ -66,10 +67,10 @@ class Transaction(Base):
     failure_reason = Column(Text, nullable=True)
 
     # Timestamps
-    transaction_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    transaction_date = Column(DateTime, default=utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationships
     user = relationship("User", back_populates="transactions")

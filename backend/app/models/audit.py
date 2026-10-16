@@ -11,6 +11,7 @@ from sqlalchemy import (
 )
 from app.core.database import Base
 import enum
+from app.utils.time import utcnow
 
 
 class AuditAction(str, enum.Enum):
@@ -52,7 +53,7 @@ class AuditLog(Base):
     user_agent = Column(String(255), nullable=True)
 
     # Immutable timestamp
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = Column(DateTime, default=utcnow, nullable=False, index=True)
 
     def __repr__(self):
         return (

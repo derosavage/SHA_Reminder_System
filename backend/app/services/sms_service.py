@@ -45,12 +45,16 @@ class SMSService:
             "Accept": "application/json",
         }
 
+        # Africa's Talking expects E.164 (+254...); omit "from" unless a sender
+        # ID is registered, since an empty value is rejected.
         payload = {
             "username": settings.AT_USERNAME,
-            "to": to,
+            "to": to if to.startswith("+") else f"+{to}",
             "message": message,
-            "from": sender_id or settings.AT_SENDER_ID,
         }
+        sender = sender_id or settings.AT_SENDER_ID
+        if sender:
+            payload["from"] = sender
 
         async with httpx.AsyncClient() as client:
             try:
@@ -58,17 +62,24 @@ class SMSService:
                     SMSService.BASE_URL,
                     data=payload,
                     headers=headers,
+                    timeout=15.0,
                 )
                 response.raise_for_status()
                 result = response.json()
-                status = result.get("SMSMessageData", {}).get("Recipients", [{}])[0].get(
-                    "status", "Unknown"
-                )
+                recipient = (
+                    result.get("SMSMessageData", {}).get("Recipients") or [{}]
+                )[0]
+                status = recipient.get("status", "Unknown")
+                # Never log the body: OTP messages contain the code.
                 logger.info(
-                    f"SMS sent to {to}: status={status}, "
-                    f"message='{message[:50]}...'"
+                    f"SMS to {to}: status={status}, length={len(message)}"
                 )
-                return status in ("Success", "Submitted")
+                # statusCode 100=Processed, 101=Sent, 102=Queued
+                return recipient.get("statusCode") in (100, 101, 102) or status in (
+                    "Success",
+                    "Sent",
+                    "Submitted",
+                )
             except Exception as e:
                 logger.error(f"Failed to send SMS to {to}: {e}")
                 return False
@@ -105,14 +116,9 @@ class SMSService:
             f"Valid for {settings.OTP_EXPIRY_MINUTES} minutes. "
             f"Do not share this code."
         )
-        message_sw = (
-            f"Namba yako ya siri ya SHA ni: {otp}. "
-            f"Inatumika kwa dakika {settings.OTP_EXPIRY_MINUTES}. "
-            f"Usimwambie mtu yeyote."
-        )
-        # Send in English (preferred)
         result = await SMSService.send_sms(phone_number, message)
-        logger.info(f"OTP sent to {phone_number}")
+        if not result:
+            logger.warning(f"OTP SMS was not delivered to {phone_number}")
         return result
 
     @staticmethod

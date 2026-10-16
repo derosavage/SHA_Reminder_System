@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.schemas.user import UserUpdate, UserProfile, UserResponse
 from app.services.auth_service import AuthService
 from app.utils.dependencies import get_current_user_id
+from app.utils.time import utcnow
 
 router = APIRouter()
 
@@ -124,7 +125,7 @@ async def get_eligibility_status(
     last_txn = txn_result.scalar_one_or_none()
 
     # Determine eligibility
-    now = datetime.utcnow()
+    now = utcnow()
     last_payment_date = last_txn.completed_at if last_txn else None
     months_since_last_payment = 0
     if last_payment_date:
@@ -174,7 +175,7 @@ async def delete_my_account(
         raise HTTPException(status_code=404, detail="User not found")
 
     # Soft delete: mark as deleted instead of removing
-    user.deleted_at = datetime.utcnow()
+    user.deleted_at = utcnow()
     user.status = UserStatus.DELETED
     user.phone_number = f"deleted_{user.id}_{user.phone_number}"
     user.national_id = f"deleted_{user.id}_{user.national_id}"

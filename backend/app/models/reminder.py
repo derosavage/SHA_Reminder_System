@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
+from app.utils.time import utcnow
 
 
 class ReminderType(str, enum.Enum):
@@ -64,7 +65,7 @@ class ReminderLog(Base):
     scheduled_for = Column(DateTime, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="reminder_logs")

@@ -14,6 +14,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
+from app.utils.time import utcnow
 
 
 class MpesaService:
@@ -213,7 +214,7 @@ class MpesaService:
                 transaction.mpesa_receipt_number = metadata.get(
                     "MpesaReceiptNumber"
                 )
-                transaction.completed_at = datetime.utcnow()
+                transaction.completed_at = utcnow()
                 transaction.result_code = result_code
                 transaction.result_description = result_description
 

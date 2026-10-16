@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from app.models.audit import AuditLog, AuditAction
+from app.utils.time import utcnow
 
 
 class AuditService:
@@ -54,7 +55,7 @@ class AuditService:
             metadata_json=metadata_json or {},
             ip_address=ip_address,
             user_agent=user_agent,
-            timestamp=datetime.utcnow(),
+            timestamp=utcnow(),
         )
         db.add(audit_entry)
         await db.commit()

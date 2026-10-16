@@ -13,6 +13,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.models.penalty import PenaltyCalculation
+from app.utils.time import utcnow
 from app.schemas.penalty import (
     PenaltyCalculateRequest,
     PenaltyCalculateResponse,
@@ -123,8 +124,8 @@ class PenaltyService:
             penalty_rate_applied=calculation_result["penalty_rate_applied"],
             total_amount_due=calculation_result["total_amount_due"],
             calculation_breakdown=calculation_result.get("months_breakdown"),
-            calculation_date=datetime.utcnow(),
-            is_offline=datetime.utcnow() if is_offline else None,
+            calculation_date=utcnow(),
+            is_offline=utcnow() if is_offline else None,
             device_id=device_id,
             ip_address=ip_address,
         )
