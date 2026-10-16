@@ -281,7 +281,7 @@ def main():
         print("  [FAIL] SOME TESTS FAILED - Check the output above.")
     print()
     print("  Full backend setup:")
-    print("    cd SHA_Reminder_System/backend")
+    print("    cd backend")
     print("    python -m venv .venv")
     print("    .venv\\Scripts\\activate")
     print("    pip install -r requirements.txt")
