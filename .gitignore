@@ -48,3 +48,15 @@ mobile/build/
 # Temporary files
 commit_msg.txt
 *.local
+
+# Merged from former SHA_Reminder_System/.gitignore
+*.env.local
+mobile/.packages
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/build/
+reports/

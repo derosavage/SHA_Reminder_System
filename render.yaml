@@ -3,7 +3,7 @@ services:
     name: sha-reminder-api
     runtime: python
     plan: free
-    rootDir: SHA_Reminder_System/backend
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
