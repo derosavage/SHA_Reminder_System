@@ -1,6 +1,6 @@
 {
-  "name": "SHA Reminder - Kikumbusho cha Malipo",
-  "short_name": "SHA Reminder",
+  "name": "sha-pay - Kikumbusho cha Malipo",
+  "short_name": "sha-pay",
   "description": "Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.",
   "id": "/",
   "start_url": "/",

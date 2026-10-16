@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SHA Reminder - Kikumbusho cha Malipo</title>
+<title>sha-pay - Kikumbusho cha Malipo</title>
 <!-- PWA -->
 <meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.">
 <meta name="theme-color" content="#3A5F0B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SHA Reminder">
+<meta name="apple-mobile-web-app-title" content="sha-pay">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
@@ -24,9 +24,9 @@
 :root{--green:#3A5F0B;--green-dark:#3A5F0B;--moss:#5D8F1A;--kiwi:#8CC63E;--green-light:#F2F7C5;--kiwi-light:#C6E387;--ink:#3E2723;--skin:#9C6B3D;--muted:#7A5230;--line:#E3E3C4;--bg:#F7F5E8;--red:#e63946;--amber:#f4a300;--radius:18px}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:90px;line-height:1.45}
 .money{font-family:'Rubik',sans-serif;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-header{background:linear-gradient(135deg,var(--moss),var(--green-dark));color:#fff;padding:18px 20px;position:sticky;top:0;z-index:10;box-shadow:0 4px 20px rgba(58,95,11,.2)}
-header h1{font-size:18px;font-weight:700}
-header p{font-size:12px;opacity:.85;margin-top:2px}
+header{background:var(--bg);color:var(--ink);padding:10px 20px 8px;position:sticky;top:0;z-index:10;border-bottom:3px solid var(--kiwi);box-shadow:0 4px 16px rgba(58,95,11,.12);display:flex;flex-direction:column;align-items:flex-start}
+header .logo{height:44px;width:auto;display:block}
+header p{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
 .offline-bar{background:var(--amber);color:#333;text-align:center;padding:6px;font-size:12px;font-weight:600;display:none}
 .offline-bar.show{display:block}
 .container{max-width:480px;margin:0 auto;padding:16px}
@@ -89,7 +89,7 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:var(--ink)}
 </style>
 </head>
 <body>
-<header><h1>SHA Reminder</h1><p>Kikumbusho cha Malipo na Makadirio ya Adhabu</p></header>
+<header><img class="logo" src="/icons/logo.png" alt="sha-pay" width="138" height="44"><p>Kikumbusho cha Malipo na Makadirio ya Adhabu</p></header>
 <div class="offline-bar" id="offlineBar">Hali ya Mtandao: Haupo mtandaoni - Mahesabu yanafanya kazi</div>
 <div class="container" id="app">
 <div class="section active" id="s-dash">
