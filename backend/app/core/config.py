@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     ALLOW_INSECURE_DEFAULTS: bool = os.getenv(
         "ALLOW_INSECURE_DEFAULTS", "false"
     ).lower() == "true"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
     OTP_EXPIRY_MINUTES: int = 5
     ALGORITHM: str = "HS256"
 

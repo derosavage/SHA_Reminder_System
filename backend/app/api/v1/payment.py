@@ -30,13 +30,33 @@ mpesa_service = MpesaService()
 async def initiate_stk_push(
     request: MpesaSTKPushRequest,
     _rl: None = Depends(rate_limit("stk", 5)),
-    user_id: Optional[str] = Depends(get_optional_user_id),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Initiate M-Pesa STK Push payment to Paybill 200222.
     Sends a payment request to the user's phone.
+    Requires a verified login; the prompt can only go to the caller's own
+    registered number and is booked against their own National ID.
     """
+    from sqlalchemy import select
+    from app.models.user import User
+
+    user = (
+        await db.execute(select(User).where(User.id == user_id))
+    ).scalar_one_or_none()
+    if not user or not user.is_phone_verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Please log in again.",
+        )
+    if request.phone_number != user.phone_number:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only pay from your own registered phone number.",
+        )
+    request.account_reference = user.national_id
+
     if not re.fullmatch(r"254[17]\d{8}", request.phone_number):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -59,7 +79,7 @@ async def initiate_stk_push(
         )
 
     # Save transaction to database if authenticated
-    if user_id and result.get("MerchantRequestID"):
+    if result.get("MerchantRequestID"):
         from app.models.transaction import Transaction, TransactionType, TransactionStatus
         import uuid
         from datetime import datetime

@@ -109,14 +109,49 @@ def test_callback_rejects_forgery(client):
     assert ok.status_code == 200  # authorised (transaction simply not found)
 
 
-def test_stk_push_rate_limited_per_phone(client, monkeypatch):
+def _login_headers(client, nid, phone):
+    otp, intl = _register(client, nid, phone)
+    v = client.post("/api/v1/auth/verify-otp", json={"phone_number": intl, "otp_code": otp})
+    assert v.status_code == 200
+    return {"Authorization": f"Bearer {v.json()['data']['access_token']}"}, intl
+
+
+def _fake_stk(monkeypatch):
     from app.api.v1 import payment
 
     async def fake(**kwargs):
-        return {"MerchantRequestID": "m", "CheckoutRequestID": "c", "ResponseCode": "0"}
+        import uuid
+
+        return {"MerchantRequestID": uuid.uuid4().hex, "CheckoutRequestID": uuid.uuid4().hex, "ResponseCode": "0"}
 
     monkeypatch.setattr(payment.mpesa_service, "stk_push", lambda **kw: fake(**kw))
-    payload = {"phone_number": "0712345678", "amount": 300, "account_reference": "12345678"}
-    codes = [client.post("/api/v1/payments/stk-push", json=payload).status_code for _ in range(4)]
+
+
+def test_stk_push_requires_login(client, monkeypatch):
+    _fake_stk(monkeypatch)
+    r = client.post("/api/v1/payments/stk-push", json={"phone_number": "0712345678", "amount": 300})
+    assert r.status_code in (401, 403)
+
+
+def test_stk_push_only_to_own_phone(client, monkeypatch):
+    _fake_stk(monkeypatch)
+    headers, intl = _login_headers(client, "44444444", "0744444444")
+    other = client.post(
+        "/api/v1/payments/stk-push", headers=headers,
+        json={"phone_number": "0799999999", "amount": 300},
+    )
+    assert other.status_code == 403
+    own = client.post(
+        "/api/v1/payments/stk-push", headers=headers,
+        json={"phone_number": "0744444444", "amount": 300},
+    )
+    assert own.status_code == 200
+
+
+def test_stk_push_rate_limited_per_phone(client, monkeypatch):
+    _fake_stk(monkeypatch)
+    headers, _ = _login_headers(client, "55555555", "0755555555")
+    payload = {"phone_number": "0755555555", "amount": 300}
+    codes = [client.post("/api/v1/payments/stk-push", json=payload, headers=headers).status_code for _ in range(4)]
     assert codes[:3] == [200, 200, 200]
     assert codes[3] == 429

@@ -12,7 +12,7 @@ class MpesaSTKPushRequest(BaseModel):
     """Schema for initiating M-Pesa STK Push."""
     phone_number: str = Field(..., description="Customer phone number")
     amount: float = Field(..., ge=10, description="Amount to pay in KES")
-    account_reference: str = Field(..., description="National ID or SHA number")
+    account_reference: str = Field("", description="Ignored: server uses the logged-in user's National ID")
     transaction_desc: str = Field("SHA Payment", max_length=50)
 
     @validator("phone_number")

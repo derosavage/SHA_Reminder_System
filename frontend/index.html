@@ -86,6 +86,20 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:var(--ink)}
 #installModal h3{font-size:18px;margin-bottom:10px;color:var(--ink)}
 #installModal ol{text-align:left;font-size:14px;color:var(--ink);padding-left:18px;line-height:1.9}
 #installModal .close{margin-top:16px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+
+/* Auth modal */
+#authModal{position:fixed;inset:0;background:rgba(62,39,35,.6);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+#authModal.show{display:flex}
+#authModal .box{background:#fff;border-radius:20px;max-width:360px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+#authModal h3{font-size:18px;margin-bottom:12px}
+#authModal p.hint{font-size:13px;color:var(--muted);margin-bottom:12px}
+.auth-tabs{display:flex;gap:6px;background:var(--green-light);padding:4px;border-radius:999px;margin-bottom:14px}
+.auth-tabs button{flex:1;border:none;background:none;padding:10px;border-radius:999px;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.auth-tabs button.active{background:var(--green);color:#fff}
+.otp-input{text-align:center;font-size:28px!important;letter-spacing:10px;font-family:'Rubik',sans-serif;font-weight:600}
+#authModal .link{background:none;border:none;color:var(--moss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;width:100%;padding:8px}
+#authModal .link:disabled{color:var(--muted);cursor:default}
+.acct-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
 </style>
 </head>
 <body>
@@ -143,15 +157,19 @@ Penalty = &Sigma;(amount &times; 0.02 &times; months late)
 <div class="paybill-label">Akaunti: Namba yako ya Kitambulisho</div>
 <button class="copy-btn" onclick="copyPB()">&#128203; Nakili Paybill</button>
 </div>
-<div class="card">
+<div class="card" id="payLock">
+<div class="card-title">&#128274; Ingia ili ulipe</div>
+<p style="font-size:14px;margin-bottom:12px">Kwa usalama wako, malipo ya M-Pesa yanahitaji kuthibitisha simu yako kwa OTP.</p>
+<button class="btn btn-primary" onclick="openAuth()">Ingia / Jisajili</button>
+</div>
+<div class="card" id="payBody" style="display:none">
 <div class="card-title">&#128179; Lipa M-Pesa</div>
 <form id="stkForm">
 <label>Namba ya Simu (Safaricom)</label>
-<input type="tel" id="phoneNumber" placeholder="0712345678" required>
+<input type="tel" id="phoneNumber" placeholder="0712345678" readonly required>
 <label>Kiasi cha Kulipa (KES)</label>
 <input type="number" id="stkAmount" min="300" value="300" step="50">
-<label>Namba ya Kitambulisho</label>
-<input type="text" id="nationalId" placeholder="Kitambulisho" required>
+<p style="font-size:12px;color:var(--muted);margin:-4px 0 12px">Akaunti: Kitambulisho chako kilichosajiliwa kinatumika kiotomatiki.</p>
 <button type="submit" class="btn btn-primary" id="stkBtn">&#128179; Lipa kwa M-Pesa</button>
 </form>
 <div id="stkResult" style="display:none;margin-top:12px"></div>
@@ -195,6 +213,10 @@ Penalty = &Sigma;(amount &times; 0.02 &times; months late)
 </div>
 </div>
 <div class="card">
+<div class="card-title">&#128100; Akaunti</div>
+<div class="acct-row"><span id="acctText">Hujaingia</span><button class="btn btn-ghost" style="width:auto;padding:10px 18px" id="acctBtn" onclick="openAuth()">Ingia</button></div>
+</div>
+<div class="card">
 <div class="card-title">&#128222; Msaada</div>
 <div style="font-size:14px;line-height:2">
 <p>&#128231; support@sha-reminder.ke</p>
@@ -219,6 +241,30 @@ Penalty = &Sigma;(amount &times; 0.02 &times; months late)
   </div>
 </div>
 
+<!-- Auth -->
+<div id="authModal" onclick="if(event.target===this)closeAuth()">
+  <div class="box">
+    <div id="authStep1">
+      <h3>&#128274; Ingia kwa usalama</h3>
+      <p class="hint">Tutakutumia nambari ya OTP kwa SMS ili kuthibitisha simu yako.</p>
+      <div class="auth-tabs"><button id="tabLogin" class="active" onclick="authMode('login')">Ingia</button><button id="tabReg" onclick="authMode('register')">Jisajili</button></div>
+      <label for="authPhone">Namba ya Simu</label>
+      <input type="tel" id="authPhone" placeholder="0712345678" autocomplete="tel">
+      <div id="authIdWrap" style="display:none"><label for="authNid">Namba ya Kitambulisho</label><input type="text" id="authNid" inputmode="numeric" placeholder="Kitambulisho" autocomplete="off"></div>
+      <button class="btn btn-primary" id="authSend" onclick="authSend()">Tuma OTP</button>
+    </div>
+    <div id="authStep2" style="display:none">
+      <h3>&#128222; Weka OTP</h3>
+      <p class="hint">Nambari ya tarakimu 5 imetumwa kwa <strong id="authSentTo"></strong>.</p>
+      <input type="text" id="authOtp" class="otp-input" inputmode="numeric" maxlength="5" autocomplete="one-time-code" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;">
+      <button class="btn btn-primary" id="authVerify" onclick="authVerify()">Thibitisha</button>
+      <button class="link" id="authResend" onclick="authResend()" disabled>Tuma tena</button>
+      <button class="link" onclick="authBack()">&larr; Badilisha namba</button>
+    </div>
+    <button style="margin-top:14px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%" onclick="closeAuth()">&#10005; Funga</button>
+  </div>
+</div>
+
 <nav class="nav">
 <button class="nav-item active" data-s="dash" onclick="go('dash')"><span class="icon">&#127968;</span>Nyumbani</button>
 <button class="nav-item" data-s="penalty" onclick="go('penalty')"><span class="icon">&#129518;</span>Adhabu</button>
@@ -235,13 +281,38 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.sty
 function copyPB(){navigator.clipboard.writeText('200222').then(()=>toast('Paybill 200222 imenakiliwa!')).catch(()=>toast('200222'))}
 function sharePB(){const t='Lipa SHA yako:\nPaybill: 200222\nAkaunti: Namba yako ya Kitambulisho\nKiasi: KES 300+';if(navigator.share)navigator.share({title:'SHA Payment',text:t}).catch(()=>{});else copyPB()}
 // STK Push - Direct M-Pesa Payment via Daraja API
-document.getElementById('stkForm').addEventListener('submit',async function(e){e.preventDefault();const btn=document.getElementById('stkBtn');const phone=document.getElementById('phoneNumber').value.trim();const amount=parseFloat(document.getElementById('stkAmount').value);const ref=document.getElementById('nationalId').value.trim();if(!phone||phone.length<9){toast('Tafadhali weka namba ya simu sahihi');return}if(!amount||amount<300){toast('Kiasi cha chini ni KES 300');return}if(!ref){toast('Tafadhali weka namba ya kitambulisho');return}btn.disabled=true;btn.textContent='Inatuma ...';try{const fPhone=phone.startsWith('0')?'254'+phone.slice(1):phone.startsWith('254')?phone:'254'+phone;const resp=await fetch(API+'/api/v1/payments/stk-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone_number:fPhone,amount:amount,account_reference:ref,transaction_desc:'SHA Payment'})});const data=await resp.json();const div=document.getElementById('stkResult');if(data.success){div.style.display='block';div.innerHTML='<div class="result-box" style="margin-top:0"><div style="font-size:15px;font-weight:600;color:var(--green-dark);margin-bottom:8px">&#9989; Ombi limefanikiwa!</div><div class="result-row"><span>Hali</span><span>Angalia simu yako kwa STK Push</span></div><div class="result-row"><span>Kiasi</span><span class="money">KES '+amount.toFixed(2)+'</span></div><div class="result-row"><span>Paybill</span><span>200222</span></div><div class="result-row"><span>Akaunti</span><span>'+ref+'</span></div></div>';toast('Angalia simu yako! STK Push imetumwa.')}else{div.style.display='block';div.innerHTML='<div class="result-box" style="background:#fef2f2;margin-top:0"><div style="color:var(--red);font-weight:600;margin-bottom:4px">&#10060; Ombi halijafanikiwa</div><div style="font-size:13px;color:var(--muted)">'+(data.detail||'Jaribu tena baadaye')+'.</div></div>';toast('STK Push imeshindwa. Jaribu tena.')}}catch(err){toast('Hitilafu ya mtandao. Hakikisha server iko sawa.')}finally{btn.disabled=false;btn.textContent='&#128179; Lipa kwa M-Pesa'}});
+document.getElementById('stkForm').addEventListener('submit',async function(e){e.preventDefault();const btn=document.getElementById('stkBtn');const amount=parseFloat(document.getElementById('stkAmount').value);if(!isAuthed()){openAuth();return}if(!amount||amount<300){toast('Kiasi cha chini ni KES 300');return}btn.disabled=true;btn.textContent='Inatuma ...';const div=document.getElementById('stkResult');try{const r=await api('/api/v1/payments/stk-push',{method:'POST',body:JSON.stringify({phone_number:ls(PH),amount:amount,transaction_desc:'SHA Payment'})});if(r.status===401){logout(true);return}if(r.ok&&r.data.success){div.style.display='block';div.innerHTML='<div class="result-box" style="margin-top:0"><div style="font-size:15px;font-weight:600;color:var(--green-dark);margin-bottom:8px">&#9989; Ombi limefanikiwa!</div><div class="result-row"><span>Hali</span><span>Angalia simu yako kwa STK Push</span></div><div class="result-row"><span>Kiasi</span><span class="money">KES '+amount.toFixed(2)+'</span></div><div class="result-row"><span>Paybill</span><span>200222</span></div></div>';toast('Angalia simu yako! STK Push imetumwa.')}else{div.style.display='block';div.innerHTML='<div class="result-box" style="background:#fef2f2;margin-top:0"><div style="color:var(--red);font-weight:600;margin-bottom:4px">&#10060; Ombi halijafanikiwa</div><div style="font-size:13px;color:var(--muted)">'+esc(errMsg(r))+'</div></div>';toast('STK Push imeshindwa. Jaribu tena.')}}catch(err){toast('Hitilafu ya mtandao. Hakikisha server iko sawa.')}finally{btn.disabled=false;btn.innerHTML='&#128179; Lipa kwa M-Pesa'}});
 function calc(m,a){const r=0.02,x=12,mm=Math.min(m,x),t=mm*a;let p=0,bd=[];for(let i=1;i<=mm;i++){const mp=a*r;p+=mp;bd.push({m:i,n:'Mwezi '+i,c:a,p:mp,r:(a*i)+(mp*i)})}return{months:mm,cont:a,total:t,penalty:p,due:t+p,bd:bd}}
 function renderHist(){const d=document.getElementById('historyList');if(calcs.length===0){d.innerHTML='<div class="empty">Bado hakuna historia. Kokotoa adhabu kwanza.</div>';return}d.innerHTML=calcs.map(c=>'<div class="result-box" style="margin-top:0;margin-bottom:8px"><div class="result-row"><span>Miezi '+c.months+' @ KES '+c.cont+'</span><span class="money">KES '+c.due.toFixed(0)+'</span></div><div class="result-row"><span style="color:var(--muted)">Adhabu: KES '+c.penalty.toFixed(0)+'</span><span style="color:var(--muted);font-size:12px">'+c.date+'</span></div></div>').join('')}
 document.getElementById('penaltyForm').addEventListener('submit',function(e){e.preventDefault();const m=parseInt(document.getElementById('missedMonths').value);const a=parseFloat(document.getElementById('monthlyAmount').value);if(!m||m<1){toast('Tafadhali weka idadi ya miezi');return}if(!a||a<300){toast('Kiasi cha chini ni KES 300');return}const r=calc(m,a);const div=document.getElementById('penaltyResult');let rows='';r.bd.forEach(b=>{rows+='<tr><td>'+b.n+'</td><td>KES '+b.c.toFixed(2)+'</td><td>KES '+b.p.toFixed(2)+'</td><td>KES '+b.r.toFixed(2)+'</td></tr>'});div.style.display='block';div.innerHTML='<div class="result-box"><div class="result-row"><span>Miezi iliyokosa</span><span>'+r.months+'</span></div><div class="result-row"><span>Kiasi cha mwezi</span><span class="money">KES '+r.cont.toFixed(2)+'</span></div><div class="result-row"><span>Michango</span><span class="money">KES '+r.total.toFixed(2)+'</span></div><div class="result-row"><span>Adhabu (2%)</span><span class="money" style="color:var(--red)">KES '+r.penalty.toFixed(2)+'</span></div><div class="result-row total"><span>Jumla ya Kulipa</span><span class="money">KES '+r.due.toFixed(2)+'</span></div></div><h3 style="font-size:14px;margin:16px 0 8px">Maelezo kwa Kila Mwezi</h3><table><thead><tr><th>Mwezi</th><th>Kiasi</th><th>Adhabu</th><th>Jumla</th></tr></thead><tbody>'+rows+'</tbody></table>';calcs.unshift({...r,date:new Date().toLocaleString('sw-KE')});renderHist()});
 function checkOnline(){document.getElementById('offlineBar').classList.toggle('show',!navigator.onLine)}
 window.addEventListener('online',checkOnline);window.addEventListener('offline',checkOnline);checkOnline();
 setTimeout(()=>{if(calcs.length===0){const r=calc(3,300);calcs.unshift({...r,date:new Date().toLocaleString('sw-KE')});renderHist()}},500);
+
+// ---- Auth (OTP) ----
+const TK='sha_token',PH='sha_phone';
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function normPhone(p){p=p.replace(/\D/g,'');if(p.startsWith('0'))p='254'+p.slice(1);else if(p.length===9)p='254'+p;return p}
+function isAuthed(){const t=ls(TK);if(!t)return false;try{const pl=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return pl.exp*1000>Date.now()}catch(e){return false}}
+async function api(path,opts){const h={'Content-Type':'application/json'};const t=ls(TK);if(t)h.Authorization='Bearer '+t;const r=await fetch(API+path,Object.assign({},opts,{headers:h}));let d={};try{d=await r.json()}catch(e){}return{ok:r.ok,status:r.status,data:d}}
+function errMsg(r){const d=r.data&&r.data.detail;if(typeof d==='string')return d;if(Array.isArray(d)&&d[0]&&d[0].msg)return d[0].msg.replace(/^Value error, /,'');return 'Jaribu tena baadaye.'}
+let authM='login',authPh='',cdTimer=null;
+function authMode(m){authM=m;document.getElementById('tabLogin').classList.toggle('active',m==='login');document.getElementById('tabReg').classList.toggle('active',m==='register');document.getElementById('authIdWrap').style.display=m==='register'?'block':'none'}
+function authStep(n){document.getElementById('authStep1').style.display=n===1?'block':'none';document.getElementById('authStep2').style.display=n===2?'block':'none'}
+function openAuth(){document.getElementById('authModal').classList.add('show');authStep(1);setTimeout(()=>document.getElementById('authPhone').focus(),50)}
+function closeAuth(){document.getElementById('authModal').classList.remove('show')}
+function authBack(){clearInterval(cdTimer);authStep(1)}
+function startCooldown(sec){const b=document.getElementById('authResend');clearInterval(cdTimer);let n=sec;b.disabled=true;b.textContent='Tuma tena ('+n+')';cdTimer=setInterval(()=>{n--;if(n<=0){clearInterval(cdTimer);b.disabled=false;b.textContent='Tuma tena'}else b.textContent='Tuma tena ('+n+')'},1000)}
+function otpResult(r){const dbg=(r.data.data&&r.data.data.debug_otp)||r.data.debug_otp;if(dbg)toast('OTP ya majaribio: '+dbg)}
+async function authSend(){const btn=document.getElementById('authSend');const phone=normPhone(document.getElementById('authPhone').value);if(!/^254[17]\d{8}$/.test(phone)){toast('Weka namba ya simu sahihi (0712345678)');return}const body={phone_number:phone};if(authM==='register'){const nid=document.getElementById('authNid').value.trim();if(!/^\d{5,10}$/.test(nid)){toast('Weka namba ya kitambulisho sahihi');return}body.national_id=nid}btn.disabled=true;try{const r=await api(authM==='register'?'/api/v1/auth/register':'/api/v1/auth/login',{method:'POST',body:JSON.stringify(body)});if(!r.ok){toast(r.status===429?'Maombi mengi. Subiri kidogo.':errMsg(r));return}authPh=phone;document.getElementById('authSentTo').textContent='0'+phone.slice(3);document.getElementById('authOtp').value='';authStep(2);startCooldown(60);otpResult(r);setTimeout(()=>document.getElementById('authOtp').focus(),50)}catch(e){toast('Hitilafu ya mtandao.')}finally{btn.disabled=false}}
+async function authVerify(){const btn=document.getElementById('authVerify');const otp=document.getElementById('authOtp').value.trim();if(!/^\d{5}$/.test(otp)){toast('Weka OTP ya tarakimu 5');return}btn.disabled=true;try{const r=await api('/api/v1/auth/verify-otp',{method:'POST',body:JSON.stringify({phone_number:authPh,otp_code:otp})});if(!r.ok||!r.data.success){toast(errMsg(r));return}ls(TK,r.data.data.access_token);ls(PH,authPh);closeAuth();updateAuthUI();toast('Umeingia kikamilifu!');go('pay')}catch(e){toast('Hitilafu ya mtandao.')}finally{btn.disabled=false}}
+async function authResend(){try{const r=await api('/api/v1/auth/resend-otp',{method:'POST',body:JSON.stringify({phone_number:authPh})});if(!r.ok){toast(r.status===429?'Maombi mengi. Subiri kidogo.':errMsg(r));return}startCooldown(60);otpResult(r);toast('OTP mpya imetumwa')}catch(e){toast('Hitilafu ya mtandao.')}}
+function logout(expired){ls(TK,null);ls(PH,null);updateAuthUI();if(expired){toast('Kipindi kimeisha. Ingia tena.');openAuth()}else toast('Umetoka.')}
+function updateAuthUI(){const a=isAuthed();if(!a){ls(TK,null)}document.getElementById('payLock').style.display=a?'none':'block';document.getElementById('payBody').style.display=a?'block':'none';const ph=ls(PH);document.getElementById('acctText').textContent=a&&ph?'Umeingia: 0'+ph.slice(3):'Hujaingia';const b=document.getElementById('acctBtn');b.textContent=a?'Toka':'Ingia';b.onclick=a?()=>logout():openAuth;if(a&&ph)document.getElementById('phoneNumber').value='0'+ph.slice(3)}
+document.getElementById('authOtp').addEventListener('keydown',e=>{if(e.key==='Enter')authVerify()});
+document.getElementById('authPhone').addEventListener('keydown',e=>{if(e.key==='Enter')authSend()});
+updateAuthUI();
 // PWA - Service Worker registration & install prompt
 const installFab=document.getElementById('installFab');
 const installModal=document.getElementById('installModal');
