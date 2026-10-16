@@ -6,7 +6,7 @@
 <title>SHA Reminder - Kikumbusho cha Malipo</title>
 <!-- PWA -->
 <meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.">
-<meta name="theme-color" content="#00B843">
+<meta name="theme-color" content="#3A5F0B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,24 +21,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--green:#00B843;--green-dark:#008f34;--green-light:#e6f7ed;--ink:#0a1f12;--muted:#6b7c70;--line:#e3e8e4;--bg:#f6f8f7;--red:#e63946;--amber:#f4a300;--radius:18px}
+:root{--green:#3A5F0B;--green-dark:#3A5F0B;--moss:#5D8F1A;--kiwi:#8CC63E;--green-light:#F2F7C5;--kiwi-light:#C6E387;--ink:#3E2723;--skin:#9C6B3D;--muted:#7A5230;--line:#E3E3C4;--bg:#F7F5E8;--red:#e63946;--amber:#f4a300;--radius:18px}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:90px;line-height:1.45}
 .money{font-family:'Rubik',sans-serif;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-header{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:18px 20px;position:sticky;top:0;z-index:10;box-shadow:0 4px 20px rgba(0,184,67,.18)}
+header{background:linear-gradient(135deg,var(--moss),var(--green-dark));color:#fff;padding:18px 20px;position:sticky;top:0;z-index:10;box-shadow:0 4px 20px rgba(58,95,11,.2)}
 header h1{font-size:18px;font-weight:700}
 header p{font-size:12px;opacity:.85;margin-top:2px}
 .offline-bar{background:var(--amber);color:#333;text-align:center;padding:6px;font-size:12px;font-weight:600;display:none}
 .offline-bar.show{display:block}
 .container{max-width:480px;margin:0 auto;padding:16px}
-.card{background:#fff;border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(10,31,18,.04)}
+.card{background:#fff;border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(62,39,35,.06)}
 .card-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.hero{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;border-radius:22px;padding:24px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,184,67,.25);position:relative;overflow:hidden}
+.hero{background:linear-gradient(135deg,var(--moss),var(--green-dark));color:#fff;border-radius:22px;padding:24px;margin-bottom:14px;box-shadow:0 10px 30px rgba(58,95,11,.28);position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
 .hero .label{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.5px;position:relative;z-index:1}
 .hero .value{font-size:32px;font-weight:800;margin:6px 0;position:relative;z-index:1}
 .hero .subtext{font-size:13px;opacity:.9;position:relative;z-index:1}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.tile{background:#fff;border-radius:var(--radius);padding:16px;text-align:center;box-shadow:0 2px 10px rgba(10,31,18,.04);cursor:pointer;border:none;font-family:inherit;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:transform .15s}
+.tile{background:#fff;border-radius:var(--radius);padding:16px;text-align:center;box-shadow:0 2px 10px rgba(62,39,35,.06);cursor:pointer;border:none;font-family:inherit;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:transform .15s}
 .tile:active{transform:scale(.97)}
 .tile .icon{font-size:28px}
 .tile .label{font-size:13px;font-weight:600;color:var(--ink)}
@@ -46,45 +46,45 @@ header p{font-size:12px;opacity:.85;margin-top:2px}
 .tile.feature .label{color:#fff}
 label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
 input,select{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink);transition:border .2s;margin-bottom:12px}
-input:focus,select:focus{outline:none;border-color:var(--green)}
+input:focus,select:focus{outline:none;border-color:var(--kiwi);box-shadow:0 0 0 3px rgba(140,198,62,.3)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:16px 20px;border:none;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer;width:100%;transition:transform .1s,box-shadow .2s;font-family:inherit}
 .btn:active{transform:scale(.97)}
-.btn-primary{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(0,184,67,.3)}
-.btn-outline{background:#fff;color:var(--green-dark);border:2px solid var(--green)}
-.btn-ghost{background:var(--green-light);color:var(--green-dark)}
-.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:var(--green-light);color:var(--green-dark)}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(58,95,11,.3)}
+.btn-outline{background:#fff;color:var(--green-dark);border:2px solid var(--moss)}
+.btn-ghost{background:var(--kiwi-light);color:var(--green-dark)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:var(--kiwi-light);color:var(--green-dark)}
 .result-box{background:var(--green-light);border-radius:14px;padding:16px;margin-top:12px}
 .result-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
 .result-row:last-child{border-bottom:none}
-.result-row.total{border-top:1.5px dashed rgba(0,184,67,.3);margin-top:6px;padding-top:12px;font-size:18px;color:var(--green-dark);font-weight:700}
-.paybill-box{background:linear-gradient(135deg,#0a1f12,#1a3a26);color:#fff;border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
-.paybill-box::after{content:"M-PESA";position:absolute;right:16px;top:16px;font-size:11px;letter-spacing:1px;background:#7fffaa;color:#0a1f12;padding:3px 8px;border-radius:999px;font-weight:700}
-.paybill-num{font-size:34px;letter-spacing:2px;margin:6px 0 2px;display:block;color:#7fffaa;font-family:'Rubik',sans-serif;font-weight:700}
+.result-row.total{border-top:1.5px dashed rgba(58,95,11,.3);margin-top:6px;padding-top:12px;font-size:18px;color:var(--green-dark);font-weight:700}
+.paybill-box{background:linear-gradient(135deg,#3E2723,#5A3A30);color:#fff;border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.paybill-box::after{content:"M-PESA";position:absolute;right:16px;top:16px;font-size:11px;letter-spacing:1px;background:var(--kiwi);color:#3E2723;padding:3px 8px;border-radius:999px;font-weight:700}
+.paybill-num{font-size:34px;letter-spacing:2px;margin:6px 0 2px;display:block;color:var(--kiwi);font-family:'Rubik',sans-serif;font-weight:700}
 .paybill-label{font-size:12px;opacity:.7}
-.copy-btn{background:var(--green);color:#fff;border:none;padding:10px 24px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;transition:transform .1s}
+.copy-btn{background:var(--kiwi);color:#3E2723;border:none;padding:10px 24px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;transition:transform .1s}
 .copy-btn:active{transform:scale(.95)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:var(--green-light);color:var(--green-dark);padding:10px 8px;text-align:left;font-weight:600}
+th{background:var(--kiwi-light);color:var(--green-dark);padding:10px 8px;text-align:left;font-weight:600}
 td{padding:10px 8px;border-bottom:1px solid var(--line)}
 .nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;box-shadow:0 -2px 12px rgba(0,0,0,.06);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .nav-item{flex:1;text-align:center;padding:10px 4px;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--muted);font-size:10px;font-weight:600;position:relative}
 .nav-item .icon{font-size:22px;display:block;margin-bottom:2px}
-.nav-item.active{color:var(--green)}
-.nav-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;background:var(--green);border-radius:0 0 3px 3px}
+.nav-item.active{color:var(--moss)}
+.nav-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;background:var(--kiwi);border-radius:0 0 3px 3px}
 .section{display:none}.section.active{display:block}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 24px;border-radius:999px;font-size:13px;z-index:30;display:none;white-space:nowrap}
-ol{padding-left:20px;line-height:1.9;font-size:14px;color:#3a4a40}
+ol{padding-left:20px;line-height:1.9;font-size:14px;color:var(--ink)}
 .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 /* PWA Install UI */
 #installFab{position:fixed;right:16px;bottom:110px;z-index:200;background:var(--green-dark);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:700;cursor:pointer;display:none;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,184,67,.4);transition:transform .15s}
 #installFab:hover{transform:scale(1.05)}
 #installFab .ico{font-size:18px}
 #installFab.hide{display:none!important}
-#installModal{position:fixed;inset:0;background:rgba(10,31,18,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+#installModal{position:fixed;inset:0;background:rgba(62,39,35,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
 #installModal.show{display:flex}
 #installModal .box{background:#fff;border-radius:20px;max-width:340px;width:100%;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 #installModal h3{font-size:18px;margin-bottom:10px;color:var(--ink)}
-#installModal ol{text-align:left;font-size:14px;color:#3a4a40;padding-left:18px;line-height:1.9}
+#installModal ol{text-align:left;font-size:14px;color:var(--ink);padding-left:18px;line-height:1.9}
 #installModal .close{margin-top:16px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
 </style>
 </head>
@@ -129,7 +129,7 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:#3a4a40}
 </div>
 <div class="card">
 <div class="card-title">&#128214; Kanuni ya Adhabu</div>
-<div style="background:#f3f4f6;padding:12px;border-radius:8px;font-size:13px;font-family:monospace;line-height:1.6">
+<div style="background:var(--green-light);padding:12px;border-radius:8px;font-size:13px;font-family:monospace;line-height:1.6">
 Adhabu = &Sigma;(kiasi &times; 0.02 &times; miezi iliyochelewa)<br>
 Penalty = &Sigma;(amount &times; 0.02 &times; months late)
 </div>

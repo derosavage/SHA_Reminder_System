@@ -12,7 +12,7 @@ import os
 import struct
 import zlib
 
-GREEN = (0, 184, 67, 255)
+GREEN = (58, 95, 11, 255)
 WHITE = (255, 255, 255, 255)
 
 

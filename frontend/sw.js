@@ -4,7 +4,7 @@
    - API calls: network-first with cache fallback (read-only GET endpoints)
    - Never cache mutating requests (POST/PATCH/DELETE)
 */
-const CACHE_NAME = "sha-reminder-v1";
+const CACHE_NAME = "sha-reminder-v2";
 
 // App shell resources to pre-cache on install.
 const APP_SHELL = [
