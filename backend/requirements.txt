@@ -20,14 +20,12 @@ pyotp==2.9.0
 # Async & Background Tasks
 celery==5.3.6
 redis==5.0.1
-celery-beat==2.0.0
 
 # HTTP & API
 httpx==0.25.2
 requests==2.31.0
 
 # SMS & Payments
-africastalking==0.2.0
 
 # Monitoring & Logging
 loguru==0.7.2
