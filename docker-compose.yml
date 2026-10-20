@@ -29,8 +29,9 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      # Repository root, so the image can include frontend/ (see Dockerfile).
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -39,6 +40,9 @@ services:
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # DEBUG=true also exposes debug_otp in auth responses (local dev only;
+      # the deployed service runs DEBUG=false). SECRET_KEY is generated per
+      # process when unset.
       DEBUG: "true"
       MPESA_ENVIRONMENT: sandbox
     depends_on:
@@ -48,12 +52,14 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+      # The bind mount above shadows the image's /app/frontend.
+      - ./frontend:/app/frontend:ro
       - backend_logs:/app/logs
 
   celery_worker:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     command: celery -A app.core.celery_config worker -l info -Q reminders,payments
     environment:
       DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
@@ -68,8 +74,8 @@ services:
 
   celery_beat:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     command: celery -A app.core.celery_config beat -l info
     environment:
       DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db

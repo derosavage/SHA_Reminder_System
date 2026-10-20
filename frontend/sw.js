@@ -1,10 +1,10 @@
 /* SHA Reminder - Service Worker
-   Offline-first caching strategy:
+   Caching strategy:
    - App shell (index.html, icons, manifest): cache-first
-   - API calls: network-first with cache fallback (read-only GET endpoints)
-   - Never cache mutating requests (POST/PATCH/DELETE)
+   - API calls: network ONLY, never cached (see the note below)
+   - Mutating requests (POST/PATCH/DELETE): never intercepted
 */
-const CACHE_NAME = "sha-reminder-v4";
+const CACHE_NAME = "sha-reminder-v5";
 
 // App shell resources to pre-cache on install.
 const APP_SHELL = [
@@ -45,19 +45,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // API read-only endpoints: network-first, fall back to cache when offline.
+  // API responses are never cached, and are not intercepted at all: the request
+  // goes straight to the network exactly as it would without a service worker.
+  //
+  // The Cache API keys on the request URL alone - the Authorization header is
+  // not part of the key - so caching GET /api/v1/users/me served account A's
+  // profile to account B on the same device (shared phones are the norm for
+  // this app). Offline API data is not worth that; the calculator runs
+  // client-side and does not need the network. Offline, the page shows its
+  // normal error state instead of stale data from another user.
   if (url.pathname.startsWith("/api/")) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
     return;
   }
 

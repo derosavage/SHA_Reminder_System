@@ -6,7 +6,7 @@ Records all M-Pesa and manual payment transactions.
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    Column, String, Boolean, DateTime, Float, Enum as SQLEnum,
+    Column, String, Boolean, DateTime, Numeric, Enum as SQLEnum,
     Text, Integer, ForeignKey
 )
 from sqlalchemy.orm import relationship
@@ -48,7 +48,10 @@ class Transaction(Base):
     status = Column(
         SQLEnum(TransactionStatus), default=TransactionStatus.PENDING, nullable=False
     )
-    amount = Column(Float, nullable=False)
+    # Exact decimal storage. asdecimal=False keeps float values in Python so
+    # existing arithmetic and JSON output are unchanged, while the database
+    # stores an exact numeric(12,2) instead of a binary float.
+    amount = Column(Numeric(12, 2, asdecimal=False), nullable=False)
     currency = Column(String(3), default="KES")
 
     # M-Pesa Specific

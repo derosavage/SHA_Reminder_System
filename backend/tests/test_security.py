@@ -3,7 +3,8 @@
 import os
 
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test_security.db"
-os.environ["ALLOW_INSECURE_DEFAULTS"] = "true"
+# DEBUG (not ALLOW_INSECURE_DEFAULTS) is what exposes debug_otp in responses.
+os.environ["DEBUG"] = "true"
 os.environ["MPESA_CALLBACK_SECRET"] = "s3cret-token"
 
 import asyncio
@@ -85,6 +86,24 @@ def test_login_does_not_reveal_unknown_numbers(client):
     assert "debug_otp" not in r.json()["data"]
 
 
+def test_otp_never_returned_when_debug_off(client, monkeypatch):
+    """The deployed configuration (DEBUG=false) must not echo the OTP.
+
+    With DEBUG off and SMS unconfigured the endpoint used to return debug_otp
+    anyway, which allowed anyone who knew a registered phone number to sign in.
+    """
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "DEBUG", False)
+    r = client.post(
+        "/api/v1/auth/register",
+        json={"national_id": "77777777", "phone_number": "0777777777"},
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["data"]["otp_sent"] is False  # no SMS provider in tests
+    assert "debug_otp" not in r.json()["data"]
+
+
 def test_otp_brute_force_locks_out(client):
     otp, phone = _register(client, "22222222", "0722222222")
     wrong = "00000" if otp != "00000" else "11111"
@@ -97,8 +116,12 @@ def test_otp_brute_force_locks_out(client):
 
 def test_otp_resend_cooldown(client):
     _, phone = _register(client, "33333333", "0733333333")
+    # Inside the cooldown the response must look exactly like the response for
+    # an unknown number: 200, no OTP. A 400 here would confirm the number is
+    # registered and rebuild the enumeration oracle.
     r = client.post("/api/v1/auth/resend-otp", json={"phone_number": phone})
-    assert r.status_code == 400  # just registered -> must wait
+    assert r.status_code == 200
+    assert "debug_otp" not in r.json()
 
 
 def test_callback_rejects_forgery(client):

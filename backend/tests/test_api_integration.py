@@ -8,7 +8,8 @@ Run: python -m pytest tests/test_api_integration.py -v
 import os
 
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test_integration.db"
-os.environ["ALLOW_INSECURE_DEFAULTS"] = "true"
+# DEBUG (not ALLOW_INSECURE_DEFAULTS) is what exposes debug_otp in responses.
+os.environ["DEBUG"] = "true"
 
 import asyncio
 

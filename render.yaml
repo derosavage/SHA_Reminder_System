@@ -14,11 +14,12 @@ services:
         generateValue: true
       - key: DEBUG
         value: "false"
-      # Test deploy: SQLite (ephemeral) and OTP shown in API responses (no SMS configured).
-      # Set to "false" and provide DATABASE_URL / AT_API_KEY before real use.
-      - key: ALLOW_INSECURE_DEFAULTS
-        value: "true"
+      # OTPs are delivered by SMS only. Do not add ALLOW_INSECURE_DEFAULTS=true
+      # here: it used to make /auth/login return the OTP in the response body,
+      # which let anyone sign in as any registered phone number. Provide
+      # AT_API_KEY / AT_USERNAME / AT_SENDER_ID below instead.
       - key: MPESA_CALLBACK_SECRET
         generateValue: true
       - key: MPESA_ENVIRONMENT
         value: sandbox
+

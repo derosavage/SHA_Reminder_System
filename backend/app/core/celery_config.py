@@ -11,6 +11,9 @@ celery_app = Celery(
     "sha_reminder",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
+    # The worker must import these modules or the beat schedule's task names
+    # resolve to NotRegistered.
+    include=["tasks.reminder_tasks"],
 )
 
 # Task routing

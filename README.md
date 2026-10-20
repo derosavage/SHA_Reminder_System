@@ -80,17 +80,24 @@ cp .env.example .env
 # Create PostgreSQL database
 createdb sha_db
 
-# Run migrations (when available)
+# Apply schema migrations (Alembic; see backend/migrations/)
 alembic upgrade head
 ```
+
+`init_db()` also runs `create_all` on startup, which is enough for a fresh local
+SQLite database but cannot alter existing tables — use migrations for changes.
 
 ### 4. Start Development Server
 
 ```bash
-python main.py
+DEBUG=true python main.py
 # API available at http://localhost:8000
-# Swagger docs at http://localhost:8000/docs
+# The interactive API docs are disabled (docs_url=None in main.py).
 ```
+
+With `DEBUG=true`, `/auth/login` and `/auth/register` return the OTP in the
+response body when no SMS provider is configured, so local testing works without
+Africa's Talking credentials. Never run a deployment with `DEBUG=true`.
 
 ### 5. Start Celery Workers (for reminders)
 
@@ -128,9 +135,13 @@ celery -A app.core.celery_config beat -l info
 ## 🧮 Penalty Calculation Formula
 
 ```
-Penalty = Σ(monthly_contribution × 0.02 × months_late)
-Rate: 2% per month (from SHA Tariff Registry)
+Penalty = monthly_contribution × 0.02 × min(months_late, 12)
+Rate: 2% per month, simple (not compounding), capped at 12 months
 ```
+
+The previous wording wrapped this in a `Σ` with `months_late` inside the summand,
+which reads as compounding and would give KES 36 for the example below. The
+implementation and the worked example use the flat form above.
 
 ### Example
 - Missed 3 months @ KES 300/month
@@ -147,21 +158,26 @@ Rate: 2% per month (from SHA Tariff Registry)
 
 ## 🛡 Security & Compliance
 
-- Kenyan Data Protection Act 2019 compliant
-- Immutable audit trail for all transactions
-- Encrypted data storage at rest
-- Role-based access control
-- User consent for data collection
-- Account deletion with data anonymization
+What the code actually does today:
 
-## 📱 Mobile App (Coming Soon)
+- OTP login (5-digit, hashed at rest, 5-attempt lockout, 60 s resend cooldown, no user enumeration)
+- JWT bearer tokens (HS256, 120-minute expiry); deleted or suspended accounts are rejected immediately
+- M-Pesa callbacks authenticated by a shared secret in the callback URL
+- STK push restricted to the caller's own registered phone number
+- Account deletion anonymizes the phone number and national ID and writes an audit record
+- Per-process rate limiting on auth and STK endpoints
 
-Flutter mobile app will provide:
-- Offline penalty calculator
-- M-Pesa deep linking
-- Swahili + English interface
-- Local SQLite database
-- Background sync
+Known gaps relative to a production compliance posture: rate limits are in-memory
+per process, the OTP hash is a salted SHA-256 (use a password-hashing KDF if this
+ever stores secrets), and encryption at rest depends on the database provider
+(Neon encrypts at rest; SQLite in the Render free tier does not).
+
+## 📱 Mobile App
+
+A Flutter app exists under `mobile/` but is **not usable yet** and is not part of
+the web deploy: it expects 6-digit OTPs (the API issues 5), `login_screen.dart`
+has a `letterSpacing` compile error, and `app.dart` never routes to the login
+screen. The PWA in `frontend/` is the supported client.
 
 ## 🚢 Deployment
 

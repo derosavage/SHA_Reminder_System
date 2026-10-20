@@ -6,7 +6,7 @@ Stores SHA contributor information and authentication details.
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    Column, String, Boolean, DateTime, Float, Enum as SQLEnum,
+    Column, String, Boolean, DateTime, Numeric, Enum as SQLEnum,
     Text, Integer
 )
 from sqlalchemy.orm import relationship
@@ -48,7 +48,7 @@ class User(Base):
     # SHA Details
     sha_number = Column(String(50), unique=True, nullable=True)
     is_verified = Column(Boolean, default=False)
-    contribution_amount = Column(Float, default=300.0)  # KES
+    contribution_amount = Column(Numeric(12, 2, asdecimal=False), default=300.0)  # KES
     last_contribution_date = Column(DateTime, nullable=True)
     eligibility_status = Column(String(20), default="inactive")
 

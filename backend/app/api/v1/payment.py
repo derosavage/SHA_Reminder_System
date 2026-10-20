@@ -160,12 +160,14 @@ async def get_payment_history(
     db: AsyncSession = Depends(get_db),
 ):
     """Get payment history for the authenticated user."""
-    from sqlalchemy import select, desc
+    from sqlalchemy import select, desc, func
     from app.models.transaction import Transaction
 
-    # Count
-    count_query = select(Transaction).where(Transaction.user_id == user_id)
-    total = len((await db.execute(count_query)).scalars().all())
+    # Count (COUNT(*), not a full row fetch)
+    count_query = select(func.count()).select_from(Transaction).where(
+        Transaction.user_id == user_id
+    )
+    total = (await db.execute(count_query)).scalar_one()
 
     # Paginated results
     query = (

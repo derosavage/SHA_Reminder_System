@@ -111,7 +111,7 @@ async def get_penalty_formula():
     return {
         "success": True,
         "data": {
-            "formula": "Penalty = Σ(monthly_contribution × 0.02 × months_late)",
+            "formula": "Penalty = monthly_contribution × 0.02 × min(months_late, 12)",
             "rate": "2% per month (0.02)",
             "rate_source": "SHA Tariff Registry - Ministry of Health",
             "minimum_contribution": 300.0,

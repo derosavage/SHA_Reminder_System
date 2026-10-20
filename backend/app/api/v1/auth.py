@@ -41,10 +41,13 @@ async def register(
                 "otp_sent": sms_sent,
             },
         }
-        # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
-        # so local testing remains possible. Gated behind ALLOW_INSECURE_DEFAULTS
-        # (default true for development; production must set it to false).
-        if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+        # DEVELOPMENT ONLY: expose the OTP when no SMS provider is configured
+        # so local testing stays possible. Gated on DEBUG, not on
+        # ALLOW_INSECURE_DEFAULTS: a deployed instance runs with DEBUG=false, so
+        # an OTP can never be handed back over the wire in production. Returning
+        # it would let anyone who knows a registered phone number sign in as that
+        # user, since login is phone + OTP only.
+        if settings.DEBUG and not sms_sent:
             response["data"]["debug_otp"] = otp
         return response
     except ValueError as e:
@@ -106,14 +109,17 @@ async def resend_otp(
         }
         if otp:
             sms_sent = await SMSService.send_otp(phone_number, otp)
-            # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
-            if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+            # DEVELOPMENT ONLY: see the note in register().
+            if settings.DEBUG and not sms_sent:
                 response["debug_otp"] = otp
         return response
-    except ValueError as e:
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Resend OTP error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not send OTP",
         )
 
 
@@ -135,15 +141,10 @@ async def login(
         otp = await AuthService.request_new_otp(db, login_data.phone_number)
         if otp:
             sms_sent = await SMSService.send_otp(login_data.phone_number, otp)
-            # DEVELOPMENT ONLY: expose OTP when SMS provider is not configured
-            if settings.ALLOW_INSECURE_DEFAULTS and not sms_sent:
+            # DEVELOPMENT ONLY: see the note in register().
+            if settings.DEBUG and not sms_sent:
                 response["data"]["debug_otp"] = otp
         return response
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
     except HTTPException:
         raise
     except Exception as e:
