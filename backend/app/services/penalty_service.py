@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from loguru import logger
 
 from app.core.config import settings
@@ -38,8 +38,9 @@ class PenaltyService:
 
         Formula:
         - Base contribution owed: missed_months × monthly_contribution
-        - Penalty per month: monthly_contribution × 0.02 × months_late (cumulative)
-        - Total penalty: Σ(monthly_contribution × 0.02 × i) for i=1..missed_months
+        - Penalty: monthly_contribution × 0.02 per missed month (simple, not
+          compounding, capped at SHA_MAX_PENALTY_MONTHS)
+        - Total penalty: monthly_contribution × 0.02 × months
 
         This matches the SHA Tariff Registry: 2% penalty per month late.
 
@@ -94,8 +95,8 @@ class PenaltyService:
             "total_amount_due": round(total_amount_due, 2),
             "months_breakdown": breakdown,
             "formula_reference": (
-                "Penalty = Σ(monthly_contribution × 0.02 × months_late) "
-                "per the SHA Tariff Registry. Rate: 2% per month late."
+                "Penalty = monthly_contribution × 0.02 × min(months_late, 12) "
+                "per the SHA Tariff Registry. Rate: 2% per month late, simple."
             ),
         }
 
@@ -149,11 +150,11 @@ class PenaltyService:
         Get penalty calculation history for a user.
         Returns (calculations, total_count).
         """
-        # Get total count
-        count_query = select(PenaltyCalculation).where(
+        # Get total count (COUNT(*), not a full row fetch)
+        count_query = select(func.count()).select_from(PenaltyCalculation).where(
             PenaltyCalculation.user_id == user_id
         )
-        total_count = len((await db.execute(count_query)).scalars().all())
+        total_count = (await db.execute(count_query)).scalar_one()
 
         # Get paginated results
         query = (

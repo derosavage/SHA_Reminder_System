@@ -1,5 +1,5 @@
 @echo off
-set PROJ_DIR=C:\Users\Administrator\StudioProjects\SHA_Reminder_System\SHA_Reminder_System\mobile
+set PROJ_DIR=C:\Users\Administrator\StudioProjects\SHA_Reminder_System\mobile
 cd /d "%PROJ_DIR%"
 echo Current directory: %CD%
 echo Looking for pubspec.yaml...

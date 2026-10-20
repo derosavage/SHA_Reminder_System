@@ -96,8 +96,10 @@ app = FastAPI(
 )
 
 # CORS middleware
-# Allow credentials only for specific origins (wildcard "*" + credentials is
-# rejected by browsers). In DEBUG mode, fall back to a permissive localhost list.
+# allow_origins comes from CORS_ORIGINS (localhost ports plus the Vercel deploy).
+# Credentials are allowed, so the list must stay explicit: "/*" with
+# credentials is rejected by browsers. Cookies are not used (the PWA sends a
+# bearer token), but keeping the explicit list costs nothing.
 cors_origins = settings.CORS_ORIGINS or []
 if settings.DEBUG:
     cors_origins = list(cors_origins)

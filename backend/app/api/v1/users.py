@@ -10,6 +10,7 @@ from loguru import logger
 from app.core.database import get_db
 from app.schemas.user import UserUpdate, UserProfile, UserResponse
 from app.services.auth_service import AuthService
+from app.services.reminder_service import ReminderService
 from app.utils.dependencies import get_current_user_id
 from app.utils.time import utcnow
 
@@ -147,7 +148,10 @@ async def get_eligibility_status(
             if last_payment_date
             else None,
             "months_since_last_payment": months_since_last_payment,
-            "next_payment_due": f"{now.year}-{now.month:02d}-09",
+            # Rolls forward past the 9th: it used to report the current month's
+            # deadline even after it had passed, so a user three weeks overdue
+            # was told to pay by a date already gone.
+            "next_payment_due": ReminderService.get_upcoming_payment_date(),
             "contribution_amount": user.contribution_amount,
             "paybill": "200222",
             "account_reference": user.national_id,

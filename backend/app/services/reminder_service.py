@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from loguru import logger
 
 from app.core.config import settings
@@ -25,8 +25,8 @@ class ReminderService:
     def get_upcoming_payment_date() -> str:
         """Get the next payment due date string."""
         now = utcnow()
-        if now.day < settings.SHA_PAYMENT_DEADLINE_DAY:
-            # This month's deadline hasn't passed
+        if now.day <= settings.SHA_PAYMENT_DEADLINE_DAY:
+            # This month's deadline is today or still ahead
             return f"{now.year}-{now.month:02d}-{settings.SHA_PAYMENT_DEADLINE_DAY:02d}"
         else:
             # Next month's deadline
@@ -170,10 +170,10 @@ class ReminderService:
         offset: int = 0,
     ) -> tuple[List[ReminderLog], int]:
         """Get reminder history for a user."""
-        count_query = select(ReminderLog).where(
+        count_query = select(func.count()).select_from(ReminderLog).where(
             ReminderLog.user_id == user_id
         )
-        total = len((await db.execute(count_query)).scalars().all())
+        total = (await db.execute(count_query)).scalar_one()
 
         query = (
             select(ReminderLog)

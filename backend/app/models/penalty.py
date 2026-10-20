@@ -6,7 +6,7 @@ Records all penalty estimation calculations for audit and transparency.
 import uuid
 from datetime import datetime
 from sqlalchemy import (
-    Column, String, DateTime, Float, Integer, ForeignKey, Text, JSON
+    Column, String, DateTime, Float, Numeric, Integer, ForeignKey, Text, JSON
 )
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -26,14 +26,14 @@ class PenaltyCalculation(Base):
 
     # Calculation Inputs
     missed_months = Column(Integer, nullable=False)
-    monthly_contribution = Column(Float, default=300.0)
+    monthly_contribution = Column(Numeric(12, 2, asdecimal=False), default=300.0)
     months_considered = Column(Integer, nullable=False)
 
-    # Calculation Results
-    total_contributions_due = Column(Float, nullable=False)
-    penalty_amount = Column(Float, nullable=False)
+    # Calculation Results (exact decimal storage; see Transaction.amount)
+    total_contributions_due = Column(Numeric(12, 2, asdecimal=False), nullable=False)
+    penalty_amount = Column(Numeric(12, 2, asdecimal=False), nullable=False)
     penalty_rate_applied = Column(Float, default=0.02)  # 2% per month
-    total_amount_due = Column(Float, nullable=False)
+    total_amount_due = Column(Numeric(12, 2, asdecimal=False), nullable=False)
 
     # Breakdown (JSON for detailed per-month breakdown)
     calculation_breakdown = Column(JSON, nullable=True)

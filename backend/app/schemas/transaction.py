@@ -7,11 +7,17 @@ from typing import Optional
 from datetime import datetime
 import re
 
+from app.core.config import settings
+
 
 class MpesaSTKPushRequest(BaseModel):
     """Schema for initiating M-Pesa STK Push."""
     phone_number: str = Field(..., description="Customer phone number")
-    amount: float = Field(..., ge=10, description="Amount to pay in KES")
+    amount: float = Field(
+        ...,
+        ge=settings.SHA_MINIMUM_CONTRIBUTION,
+        description="Amount to pay in KES (SHA minimum contribution)",
+    )
     account_reference: str = Field("", description="Ignored: server uses the logged-in user's National ID")
     transaction_desc: str = Field("SHA Payment", max_length=50)
 

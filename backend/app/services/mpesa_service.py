@@ -3,10 +3,7 @@ M-Pesa Daraja API Integration Service
 Handles STK Push initiation and callback processing for SHA payments.
 """
 
-import uuid
 import base64
-import json
-from datetime import datetime
 from typing import Optional, Dict, Any
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,7 +11,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
-from app.utils.time import utcnow
+from app.utils.time import eat_now, utcnow
 
 
 class MpesaService:
@@ -77,7 +74,7 @@ class MpesaService:
             logger.error("Cannot initiate STK Push without OAuth token")
             return None
 
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        timestamp = eat_now().strftime("%Y%m%d%H%M%S")
         password = base64.b64encode(
             f"{settings.MPESA_BUSINESS_SHORTCODE}{settings.MPESA_PASSKEY}"
             f"{timestamp}".encode()
@@ -108,6 +105,17 @@ class MpesaService:
                 response = await client.post(url, json=payload, headers=headers)
                 response.raise_for_status()
                 result = response.json()
+                # Daraja can return HTTP 200 with a rejected request (bad
+                # amount, unsupported shortcode, expired passkey...). Without
+                # this check a failure looked like a queued prompt, so the
+                # caller stored a PENDING transaction that could never settle.
+                if str(result.get("ResponseCode", "")) != "0":
+                    logger.error(
+                        "M-Pesa STK Push rejected: "
+                        f"code={result.get('ResponseCode')} "
+                        f"message={result.get('ResponseDescription') or result.get('errorMessage')}"
+                    )
+                    return None
                 logger.info(
                     f"M-Pesa STK Push sent: {result.get('MerchantRequestID')}"
                 )
@@ -133,7 +141,7 @@ class MpesaService:
         if not token:
             return None
 
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        timestamp = eat_now().strftime("%Y%m%d%H%M%S")
         password = base64.b64encode(
             f"{settings.MPESA_BUSINESS_SHORTCODE}{settings.MPESA_PASSKEY}"
             f"{timestamp}".encode()

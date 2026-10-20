@@ -104,9 +104,12 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Never sign tokens with an empty key: in insecure/dev mode fall back to a
-# random per-process key (tokens are invalidated on restart).
-if not settings.SECRET_KEY and settings.ALLOW_INSECURE_DEFAULTS:
+# Never sign tokens with an empty key: in local development fall back to a
+# random per-process key (tokens are invalidated on restart). ALLOW_INSECURE_DEFAULTS
+# keeps the same escape hatch for a throwaway instance started without config.
+if not settings.SECRET_KEY and (
+    settings.ALLOW_INSECURE_DEFAULTS or settings.DEBUG
+):
     import secrets as _secrets
 
     settings.SECRET_KEY = _secrets.token_urlsafe(48)

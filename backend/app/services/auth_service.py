@@ -183,7 +183,14 @@ class AuthService:
         db: AsyncSession,
         phone_number: str,
     ) -> Optional[str]:
-        """Request a new OTP code. Returns None if the phone is unknown."""
+        """Request a new OTP code. Returns None if no OTP should be sent.
+
+        Deliberately returns None instead of raising for an unknown number, a
+        number still inside the resend cooldown, and a locked account. Raising
+        only for registered numbers turned the login and resend endpoints into a
+        membership oracle: an attacker could tell a registered phone (400) from
+        an unregistered one (200) without sending a single SMS.
+        """
         query = select(User).where(User.phone_number == phone_number)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -193,15 +200,12 @@ class AuthService:
 
         now = utcnow()
         if user.locked_until and user.locked_until > now:
-            raise ValueError(
-                "Too many failed attempts. Try again in a few minutes."
-            )
+            logger.info(f"OTP request for locked account ignored: {phone_number}")
+            return None
         if user.otp_expiry:
             sent_at = user.otp_expiry - timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
             if (now - sent_at).total_seconds() < OTP_RESEND_COOLDOWN_SECONDS:
-                raise ValueError(
-                    "Please wait a minute before requesting another OTP."
-                )
+                return None
 
         otp = AuthService.generate_otp()
         user.otp_secret = AuthService._hash_otp(otp)
