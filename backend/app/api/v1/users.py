@@ -8,10 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from app.core.database import get_db
+from app.core.i18n import translate
 from app.schemas.user import UserUpdate, UserProfile, UserResponse
 from app.services.auth_service import AuthService
 from app.services.reminder_service import ReminderService
-from app.utils.dependencies import get_current_user_id
+from app.utils.dependencies import get_current_user_id, get_request_language
 from app.utils.time import utcnow
 
 router = APIRouter()
@@ -21,6 +22,7 @@ router = APIRouter()
 async def get_my_profile(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """Get the authenticated user's profile."""
     from app.models.user import User
@@ -33,7 +35,7 @@ async def get_my_profile(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail=translate("user_not_found", language),
         )
 
     return {
@@ -69,6 +71,7 @@ async def update_my_profile(
     update_data: UserUpdate,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """Update the authenticated user's profile."""
     updated_user = await AuthService.update_user_profile(
@@ -78,12 +81,12 @@ async def update_my_profile(
     if not updated_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail=translate("user_not_found", language),
         )
 
     return {
         "success": True,
-        "message": "Profile updated successfully.",
+        "message": translate("profile_updated", language),
         "data": {
             "full_name": updated_user.full_name,
             "email": updated_user.email,
@@ -98,6 +101,7 @@ async def update_my_profile(
 async def get_eligibility_status(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """Get the authenticated user's SHA eligibility status."""
     from app.models.user import User
@@ -110,7 +114,9 @@ async def get_eligibility_status(
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404, detail=translate("user_not_found", language)
+        )
 
     # Get last contribution
     last_txn_query = (
@@ -163,6 +169,7 @@ async def get_eligibility_status(
 async def delete_my_account(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """Delete the authenticated user's account (Data Protection Act compliance)."""
     from app.models.user import User, UserStatus
@@ -176,7 +183,9 @@ async def delete_my_account(
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404, detail=translate("user_not_found", language)
+        )
 
     # Soft delete: mark as deleted instead of removing
     user.deleted_at = utcnow()
@@ -199,5 +208,5 @@ async def delete_my_account(
     logger.info(f"User account deleted: {user_id}")
     return {
         "success": True,
-        "message": "Account deleted successfully. Your data has been anonymized.",
+        "message": translate("account_deleted", language),
     }

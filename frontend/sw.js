@@ -4,7 +4,7 @@
    - API calls: network ONLY, never cached (see the note below)
    - Mutating requests (POST/PATCH/DELETE): never intercepted
 */
-const CACHE_NAME = "sha-pay-v5";
+const CACHE_NAME = "sha-pay-v6";
 
 // App shell resources to pre-cache on install.
 const APP_SHELL = [

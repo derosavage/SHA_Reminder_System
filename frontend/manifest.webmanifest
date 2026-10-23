@@ -1,7 +1,7 @@
 {
-  "name": "sha-pay - Kikumbusho cha Malipo",
+  "name": "sha-pay",
   "short_name": "sha-pay",
-  "description": "Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.",
+  "description": "Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222. | SHA payment reminders and penalty estimates. Pay via M-Pesa Paybill 200222.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -34,16 +34,16 @@
   ],
   "shortcuts": [
     {
-      "name": "Kokotoa Adhabu",
-      "short_name": "Adhabu",
-      "description": "Hesabu adhabu ya malipo ya SHA",
+      "name": "Kokotoa Adhabu / Calculate Penalty",
+      "short_name": "Adhabu / Penalty",
+      "description": "Hesabu adhabu ya malipo ya SHA / Calculate SHA payment penalties",
       "url": "/#penalty",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Lipa M-Pesa",
-      "short_name": "Lipa",
-      "description": "Lipa SHA kwa M-Pesa Paybill 200222",
+      "name": "Lipa M-Pesa / Pay via M-Pesa",
+      "short_name": "Lipa / Pay",
+      "description": "Lipa SHA kwa M-Pesa Paybill 200222 / Pay SHA via M-Pesa Paybill 200222",
       "url": "/#pay",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
