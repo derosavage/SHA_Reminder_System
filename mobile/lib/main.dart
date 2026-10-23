@@ -7,7 +7,7 @@ void main() {
 
   runApp(
     const ProviderScope(
-      child: SHAReminderApp(),
+      child: ShaPayApp(),
     ),
   );
 }

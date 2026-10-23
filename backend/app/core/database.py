@@ -47,7 +47,7 @@ def normalize_database_url(url: str) -> str:
 # Use SQLite for local dev (no install needed). Set DATABASE_URL=postgresql://...
 # (e.g. a Neon connection string) for production.
 DATABASE_URL = normalize_database_url(
-    os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./sha_reminder.db")
+    os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./sha_pay.db")
 )
 
 connect_args = {}

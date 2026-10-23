@@ -25,13 +25,13 @@ final appConfigProvider = Provider<AppConfig>((ref) {
   switch (env) {
     case Environment.prod:
       return AppConfig(
-        baseUrl: 'https://api.sha-reminder.ke/api/v1',
-        appName: 'SHA Reminder',
+        baseUrl: 'https://api.sha-pay.ke/api/v1',
+        appName: 'sha-pay',
       );
     case Environment.staging:
       return AppConfig(
-        baseUrl: 'https://staging-api.sha-reminder.ke/api/v1',
-        appName: 'SHA Reminder (Staging)',
+        baseUrl: 'https://staging-api.sha-pay.ke/api/v1',
+        appName: 'sha-pay (Staging)',
         debugMode: true,
       );
     case Environment.dev:

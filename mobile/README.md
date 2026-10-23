@@ -1,4 +1,4 @@
-# sha_reminder
+# sha_pay
 
 A new Flutter project.
 

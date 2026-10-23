@@ -7,7 +7,7 @@ class AppLocalizations {
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'app_title': 'SHA Reminder',
+      'app_title': 'sha-pay',
       'eligibility_status': 'Eligibility Status',
       'active': 'ACTIVE',
       'inactive': 'INACTIVE',

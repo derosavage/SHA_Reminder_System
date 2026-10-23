@@ -112,7 +112,7 @@ class SMSService:
     async def send_otp(phone_number: str, otp: str) -> bool:
         """Send OTP verification code via SMS."""
         message = (
-            f"Your SHA Reminder System OTP is: {otp}. "
+            f"Your sha-pay OTP is: {otp}. "
             f"Valid for {settings.OTP_EXPIRY_MINUTES} minutes. "
             f"Do not share this code."
         )

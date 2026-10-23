@@ -10,7 +10,7 @@ api_router = APIRouter()
 
 health_payload = {
     "status": "healthy",
-    "service": "SHA Reminder & Penalty Estimation System",
+    "service": "sha-pay",
     "version": "1.0.0",
 }
 

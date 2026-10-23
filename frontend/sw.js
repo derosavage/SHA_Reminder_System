@@ -1,10 +1,10 @@
-/* SHA Reminder - Service Worker
+/* sha-pay - Service Worker
    Caching strategy:
    - App shell (index.html, icons, manifest): cache-first
    - API calls: network ONLY, never cached (see the note below)
    - Mutating requests (POST/PATCH/DELETE): never intercepted
 */
-const CACHE_NAME = "sha-reminder-v5";
+const CACHE_NAME = "sha-pay-v5";
 
 // App shell resources to pre-cache on install.
 const APP_SHELL = [

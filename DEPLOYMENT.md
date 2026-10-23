@@ -6,7 +6,7 @@ Last updated: 2026-10-20
 
 | Piece | Where | Notes |
 |---|---|---|
-| API + PWA | Render free web service `sha-reminder-api` | https://sha-reminder-api.onrender.com |
+| API + PWA | Render free web service `sha-pay-api` | https://sha-pay-api.onrender.com |
 | Frontend (optional CDN) | Vercel, root dir `frontend` | `frontend/vercel.json` proxies `/api/*` to the Render URL |
 
 The FastAPI backend serves the PWA itself (`/`, `/manifest.webmanifest`, `/sw.js`, `/icons/*`), so Vercel is optional.
@@ -41,7 +41,7 @@ Redeploy: service -> **Manual Deploy -> Deploy latest commit**.
 | `DEBUG` | blueprint | **Must stay `false`.** With `DEBUG=true` and no SMS provider, `/auth/login` returns the OTP in the response body, which lets anyone sign in as any registered phone number. |
 | `ALLOW_INSECURE_DEFAULTS` | not set | Escape hatch for a throwaway instance: lets the API start without `SECRET_KEY`. It no longer exposes OTPs. Do not set it on this service. |
 | `MPESA_ENVIRONMENT` | blueprint | `sandbox` or `production` |
-| `MPESA_CALLBACK_URL` | **manual** | `https://sha-reminder-api.onrender.com/api/v1/payments/callback?token=<MPESA_CALLBACK_SECRET value>` |
+| `MPESA_CALLBACK_URL` | **manual** | `https://sha-pay-api.onrender.com/api/v1/payments/callback?token=<MPESA_CALLBACK_SECRET value>` |
 | `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_PASSKEY` | **manual** | Daraja credentials (STK push returns 502 without them) |
 | `MPESA_BUSINESS_SHORTCODE` | manual (optional) | Defaults to `174379` (sandbox) |
 | `AT_API_KEY`, `AT_USERNAME`, `AT_SENDER_ID` | **manual** | Africa's Talking SMS (`AT_USERNAME=sandbox` = SMS disabled) |

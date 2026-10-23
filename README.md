@@ -1,4 +1,4 @@
-# SHA Reminder & Penalty Estimation System
+# sha-pay
 
 A digital platform that helps Kenyan citizens manage their Social Health Authority (SHA) contributions efficiently. The system provides contribution tracking, penalty estimation, eligibility monitoring, automated SMS reminders, payment guidance, and customer management dashboards.
 
@@ -34,7 +34,7 @@ A digital platform that helps Kenyan citizens manage their Social Health Authori
 ## 🏗 Project Structure
 
 ```
-SHA_Reminder_System/
+sha-pay/
 ├── backend/                    # FastAPI Backend
 │   ├── app/
 │   │   ├── api/v1/            # REST API routes
@@ -215,7 +215,7 @@ Proprietary - All Rights Reserved
 ## 🤝 Support
 
 For API support and enterprise inquiries:
-- Email: support@sha-reminder.ke
+- Email: support@sha-pay.ke
 - Phone: +254 700 000 000
 
 ---

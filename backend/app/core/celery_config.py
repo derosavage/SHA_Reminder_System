@@ -8,7 +8,7 @@ from celery.schedules import crontab
 from app.core.config import settings
 
 celery_app = Celery(
-    "sha_reminder",
+    "sha_pay",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     # The worker must import these modules or the beat schedule's task names

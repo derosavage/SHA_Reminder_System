@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     """Main application settings loaded from environment variables."""
 
     # App Metadata
-    APP_NAME: str = "SHA Reminder & Penalty Estimation System"
+    APP_NAME: str = "sha-pay"
     APP_VERSION: str = "1.0.0"
     APP_DESCRIPTION: str = (
         "Digital platform for managing SHA contributions, "
@@ -35,11 +35,11 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+asyncpg://sha_user:sha_pass@localhost:5432/sha_db"
+        "postgresql+asyncpg://shapay_user:shapay_pass@localhost:5432/shapay_db"
     )
     DATABASE_URL_SYNC: str = os.getenv(
         "DATABASE_URL_SYNC",
-        "postgresql://sha_user:sha_pass@localhost:5432/sha_db"
+        "postgresql://shapay_user:shapay_pass@localhost:5432/shapay_db"
     )
 
     # Redis
@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:8080",
         "http://localhost:5173",
-        "https://sha-reminder.vercel.app",
+        "https://sha-pay.vercel.app",
     ]
 
     # Rate Limiting
