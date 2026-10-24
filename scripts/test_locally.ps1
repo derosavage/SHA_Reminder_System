@@ -1,8 +1,8 @@
-# SHA Reminder System - Local Test Script (Windows PowerShell)
+# sha-pay - Local Test Script (Windows PowerShell)
 # Tests the penalty calculator without any dependencies
 
 Write-Host "========================================" -ForegroundColor Green
-Write-Host "SHA Reminder System - Local Test Suite" -ForegroundColor Green
+Write-Host "sha-pay - Local Test Suite" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 

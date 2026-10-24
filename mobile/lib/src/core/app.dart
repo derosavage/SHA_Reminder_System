@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../features/dashboard/presentation/main_navigation_screen.dart';
 
-class SHAReminderApp extends StatelessWidget {
-  const SHAReminderApp({super.key});
+class ShaPayApp extends StatelessWidget {
+  const ShaPayApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SHA Reminder',
+      title: 'sha-pay',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

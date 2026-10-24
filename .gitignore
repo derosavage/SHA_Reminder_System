@@ -49,7 +49,7 @@ mobile/build/
 commit_msg.txt
 *.local
 
-# Merged from former SHA_Reminder_System/.gitignore
+# Merged from former sha-pay/.gitignore
 *.env.local
 mobile/.packages
 mobile/.flutter-plugins

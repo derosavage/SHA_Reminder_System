@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://sha-reminder-api.onrender.com/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://sha-pay-api.onrender.com/api/:path*" }
   ],
   "headers": [
     { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }

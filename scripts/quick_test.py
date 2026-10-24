@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SHA Reminder System - Quick Local Test
+sha-pay - Quick Local Test
 Zero dependencies - uses ONLY Python standard library (no pip install needed)
 
 Tests the core penalty calculator logic and API endpoints via curl.
@@ -253,7 +253,7 @@ def test_api_endpoints():
 def main():
     print()
     print("=" * 60)
-    print("  SHA REMINDER & PENALTY ESTIMATION SYSTEM")
+    print("  sha-pay")
     print("  Quick Local Test Suite")
     print("=" * 60)
     print(f"  Tested: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

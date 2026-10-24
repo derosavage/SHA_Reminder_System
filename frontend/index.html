@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>sha-pay - Kikumbusho cha Malipo</title>
+<title data-i18n="meta.title">sha-pay - Kikumbusho cha Malipo</title>
 <!-- PWA -->
-<meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.">
+<meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222." data-i18n-attr="content:meta.description">
 <meta name="theme-color" content="#3A5F0B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,6 +27,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 header{background:var(--bg);color:var(--ink);padding:10px 20px 8px;position:sticky;top:0;z-index:10;border-bottom:3px solid var(--kiwi);box-shadow:0 4px 16px rgba(58,95,11,.12);display:flex;flex-direction:column;align-items:flex-start}
 header .logo{height:44px;width:auto;display:block}
 header p{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
+.head-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px}
+.lang-toggle{display:inline-flex;gap:3px;background:var(--kiwi-light);padding:3px;border-radius:999px}
+.lang-btn{border:none;background:none;padding:6px 14px;border-radius:999px;font-family:inherit;font-size:12px;font-weight:700;color:var(--green-dark);cursor:pointer;line-height:1.2}
+.lang-btn.active{background:var(--green);color:#fff}
+.lang-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 .offline-bar{background:var(--amber);color:#333;text-align:center;padding:6px;font-size:12px;font-weight:600;display:none}
 .offline-bar.show{display:block}
 .container{max-width:480px;margin:0 auto;padding:16px}
@@ -103,141 +108,147 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:var(--ink)}
 </style>
 </head>
 <body>
-<header><img class="logo" src="/icons/logo.png" alt="sha-pay" width="138" height="44"><p>Kikumbusho cha Malipo na Makadirio ya Adhabu</p></header>
-<div class="offline-bar" id="offlineBar">Hali ya Mtandao: Haupo mtandaoni - Mahesabu yanafanya kazi</div>
+<header>
+  <div class="head-row">
+    <img class="logo" src="/icons/logo.png" alt="sha-pay" width="138" height="44">
+    <div class="lang-toggle" role="group" aria-label="Chagua lugha" data-i18n-attr="aria-label:lang.group">
+      <button type="button" id="langSw" class="lang-btn active" lang="sw" aria-pressed="true" aria-label="Badilisha lugha kwa Kiswahili" data-i18n-attr="aria-label:lang.switchToSw" onclick="setLang('sw')">SW</button>
+      <button type="button" id="langEn" class="lang-btn" lang="en" aria-pressed="false" aria-label="Badilisha lugha kua Kiingereza" data-i18n-attr="aria-label:lang.switchToEn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+  <p data-i18n="header.tagline">Kikumbusho cha Malipo na Makadirio ya Adhabu</p>
+</header>
+<div class="offline-bar" id="offlineBar" data-i18n="offline.bar">Hali ya Mtandao: Haupo mtandaoni - Mahesabu yanafanya kazi</div>
 <div class="container" id="app">
 <div class="section active" id="s-dash">
 <div class="hero">
-<div class="label">Hali ya Ustahiki (Eligibility)</div>
-<div class="value" id="eligVal">Active</div>
-<span class="tag" id="eligTag">WAZI</span>
-<div class="subtext" style="margin-top:8px" id="eligSub">Akaunti yako iko sawa. Lipa kabla ya tarehe 9.</div>
+<div class="label" data-i18n="dash.eligLabel">Hali ya Ustahiki (Eligibility)</div>
+<div class="value" id="eligVal" data-i18n="dash.eligValue">Active</div>
+<span class="tag" id="eligTag" data-i18n="dash.eligTag">WAZI</span>
+<div class="subtext" style="margin-top:8px" id="eligSub" data-i18n="dash.eligSub">Akaunti yako iko sawa. Lipa kabla ya tarehe 9.</div>
 </div>
 <div class="grid-2">
-<button class="tile feature" onclick="go('pay')"><div class="icon">&#128176;</div><div class="label">Lipa M-Pesa</div></button>
-<button class="tile" onclick="go('penalty')"><div class="icon">&#129518;</div><div class="label">Kokotoa Adhabu</div></button>
-<button class="tile" onclick="go('hist')"><div class="icon">&#128202;</div><div class="label">Historia</div></button>
-<button class="tile" onclick="go('info')"><div class="icon">&#8505;&#65039;</div><div class="label">Maelezo</div></button>
+<button class="tile feature" onclick="go('pay')"><div class="icon">&#128176;</div><div class="label" data-i18n="dash.tilePay">Lipa M-Pesa</div></button>
+<button class="tile" onclick="go('penalty')"><div class="icon">&#129518;</div><div class="label" data-i18n="dash.tilePenalty">Kokotoa Adhabu</div></button>
+<button class="tile" onclick="go('hist')"><div class="icon">&#128202;</div><div class="label" data-i18n="dash.tileHistory">Historia</div></button>
+<button class="tile" onclick="go('info')"><div class="icon">&#8505;&#65039;</div><div class="label" data-i18n="dash.tileInfo">Maelezo</div></button>
 </div>
 <div class="card">
-<div class="card-title">&#128202; Muhtasari</div>
+<div class="card-title" data-i18n="dash.summaryTitle">&#128202; Muhtasari</div>
 <div style="font-size:14px;line-height:1.9">
-<p><strong>Malipo ya Chini:</strong> KES 300 kwa mwezi</p>
-<p><strong>Tarehe ya Mwisho:</strong> Tarehe 9 kila mwezi</p>
-<p><strong>Adhabu:</strong> 2% kwa mwezi uliochelewa</p>
-<p><strong>Paybill:</strong> 200222</p>
+<p><strong data-i18n="dash.sumMinLabel">Malipo ya Chini:</strong> <span data-i18n="dash.sumMinValue">KES 300 kwa mwezi</span></p>
+<p><strong data-i18n="dash.sumDueLabel">Tarehe ya Mwisho:</strong> <span data-i18n="dash.sumDueValue">Tarehe 9 kila mwezi</span></p>
+<p><strong data-i18n="dash.sumPenaltyLabel">Adhabu:</strong> <span data-i18n="dash.sumPenaltyValue">2% kwa mwezi uliochelewa</span></p>
+<p><strong data-i18n="dash.sumPaybillLabel">Paybill:</strong> <span>200222</span></p>
 </div>
 </div>
 </div>
 <div class="section" id="s-penalty">
 <div class="card">
-<div class="card-title">&#129518; Kokotoa Adhabu</div>
+<div class="card-title" data-i18n="penalty.title">&#129518; Kokotoa Adhabu</div>
 <form id="penaltyForm">
-<label>Miezi Uliyokosa (Missed Months)</label>
+<label data-i18n="penalty.monthsLabel">Miezi Uliyokosa (Missed Months)</label>
 <input type="number" id="missedMonths" min="1" max="24" value="3" required>
-<label>Kiasi cha Mwezi (Monthly Contribution) KES</label>
+<label data-i18n="penalty.amountLabel">Kiasi cha Mwezi (Monthly Contribution) KES</label>
 <input type="number" id="monthlyAmount" min="300" value="300" step="50">
-<button type="submit" class="btn btn-primary">Kokotoa</button>
+<button type="submit" class="btn btn-primary" data-i18n="penalty.calcBtn">Kokotoa</button>
 </form>
 <div id="penaltyResult" style="display:none"></div>
 </div>
 <div class="card">
-<div class="card-title">&#128214; Kanuni ya Adhabu</div>
-<div style="background:var(--green-light);padding:12px;border-radius:8px;font-size:13px;font-family:monospace;line-height:1.6">
-Adhabu = &Sigma;(kiasi &times; 0.02 &times; miezi iliyochelewa)<br>
-Penalty = &Sigma;(amount &times; 0.02 &times; months late)
-</div>
-<p style="font-size:12px;color:var(--muted);margin-top:8px">Chanzo: SHA Tariff Registry - Wizara ya Afya. Kiwango: 2% kwa mwezi.</p>
+<div class="card-title" data-i18n="penalty.rulesTitle">&#128214; Kanuni ya Adhabu</div>
+<div style="background:var(--green-light);padding:12px;border-radius:8px;font-size:13px;font-family:monospace;line-height:1.6" data-i18n="penalty.rule">Adhabu = &Sigma;(kiasi &times; 0.02 &times; miezi iliyochelewa)</div>
+<p style="font-size:12px;color:var(--muted);margin-top:8px" data-i18n="penalty.source">Chanzo: SHA Tariff Registry - Wizara ya Afya. Kiwango: 2% kwa mwezi.</p>
 </div>
 </div>
 <div class="section" id="s-pay">
 <div class="paybill-box">
-<div class="paybill-label">Nambari ya Biashara (Paybill)</div>
+<div class="paybill-label" data-i18n="pay.paybillLabel">Nambari ya Biashara (Paybill)</div>
 <div class="paybill-num">200222</div>
-<div class="paybill-label">Akaunti: Namba yako ya Kitambulisho</div>
-<button class="copy-btn" onclick="copyPB()">&#128203; Nakili Paybill</button>
+<div class="paybill-label" data-i18n="pay.accountLabel">Akaunti: Namba yako ya Kitambulisho</div>
+<button class="copy-btn" onclick="copyPB()" data-i18n="pay.copyBtn">&#128203; Nakili Paybill</button>
 </div>
 <div class="card" id="payLock">
-<div class="card-title">&#128274; Ingia ili ulipe</div>
-<p style="font-size:14px;margin-bottom:12px">Kwa usalama wako, malipo ya M-Pesa yanahitaji kuthibitisha simu yako kwa OTP.</p>
-<button class="btn btn-primary" onclick="openAuth()">Ingia / Jisajili</button>
+<div class="card-title" data-i18n="pay.lockTitle">&#128274; Ingia ili ulipe</div>
+<p style="font-size:14px;margin-bottom:12px" data-i18n="pay.lockText">Kwa usalama wako, malipo ya M-Pesa yanahitaji kuthibitisha simu yako kwa OTP.</p>
+<button class="btn btn-primary" onclick="openAuth()" data-i18n="pay.lockBtn">Ingia / Jisajili</button>
 </div>
 <div class="card" id="payBody" style="display:none">
-<div class="card-title">&#128179; Lipa M-Pesa</div>
+<div class="card-title" data-i18n="pay.title">&#128179; Lipa M-Pesa</div>
 <form id="stkForm">
-<label>Namba ya Simu (Safaricom)</label>
+<label data-i18n="pay.phoneLabel">Namba ya Simu (Safaricom)</label>
 <input type="tel" id="phoneNumber" placeholder="0712345678" readonly required>
-<label>Kiasi cha Kulipa (KES)</label>
+<label data-i18n="pay.amountLabel">Kiasi cha Kulipa (KES)</label>
 <input type="number" id="stkAmount" min="300" value="300" step="50">
-<p style="font-size:12px;color:var(--muted);margin:-4px 0 12px">Akaunti: Kitambulisho chako kilichosajiliwa kinatumika kiotomatiki.</p>
-<button type="submit" class="btn btn-primary" id="stkBtn">&#128179; Lipa kwa M-Pesa</button>
+<p style="font-size:12px;color:var(--muted);margin:-4px 0 12px" data-i18n="pay.autoAccount">Akaunti: Kitambulisho chako kilichosajiliwa kinatumika kiotomatiki.</p>
+<button type="submit" class="btn btn-primary" id="stkBtn"><span aria-hidden="true">&#128179;</span> <span data-i18n="pay.payBtn">Lipa kwa M-Pesa</span></button>
 </form>
 <div id="stkResult" style="display:none;margin-top:12px"></div>
-<h3 style="font-size:15px;margin:16px 0 10px 0">Hatua za Kulipa (Mwongozo):</h3>
+<h3 style="font-size:15px;margin:16px 0 10px 0" data-i18n="pay.stepsTitle">Hatua za Kulipa (Mwongozo):</h3>
 <ol>
-<li>Nenda kwa <strong>M-Pesa</strong> kwenye simu yako</li>
-<li>Chagua <strong>"Lipa na M-Pesa"</strong> &rarr; <strong>"Paybill"</strong></li>
-<li>Weka Namba ya Biashara: <strong>200222</strong></li>
-<li>Weka Akaunti: <strong>Namba yako ya Kitambulisho</strong></li>
-<li>Weka Kiasi: <strong>KES 300 au zaidi</strong></li>
-<li>Weka PIN yako na <strong>Thibitisha</strong></li>
+<li><span data-i18n="pay.step1a">Nenda kwa</span> <strong>M-Pesa</strong> <span data-i18n="pay.step1b">kwenye simu yako</span></li>
+<li><span data-i18n="pay.step2a">Chagua</span> <strong data-i18n="pay.step2b">"Lipa na M-Pesa"</strong> &rarr; <strong data-i18n="pay.step2c">"Paybill"</strong></li>
+<li><span data-i18n="pay.step3">Weka Namba ya Biashara:</span> <strong>200222</strong></li>
+<li><span data-i18n="pay.step4a">Weka Akaunti:</span> <strong data-i18n="pay.step4b">Namba yako ya Kitambulisho</strong></li>
+<li><span data-i18n="pay.step5a">Weka Kiasi:</span> <strong data-i18n="pay.step5b">KES 300 au zaidi</strong></li>
+<li><span data-i18n="pay.step6a">Weka PIN yako na</span> <strong data-i18n="pay.step6b">Thibitisha</strong></li>
 </ol>
-<button class="btn btn-ghost" style="margin-top:12px" onclick="sharePB()">&#128228; Shiriki Paybill</button>
+<button class="btn btn-ghost" style="margin-top:12px" onclick="sharePB()" data-i18n="pay.shareBtn">&#128228; Shiriki Paybill</button>
 </div>
 </div>
 <div class="section" id="s-hist">
 <div class="card">
-<div class="card-title">&#128202; Historia Yako</div>
-<div id="historyList"><div class="empty">Bado hakuna historia. Kokotoa adhabu kwanza.</div></div>
+<div class="card-title" data-i18n="hist.title">&#128202; Historia Yako</div>
+<div id="historyList"><div class="empty" data-i18n="hist.empty">Bado hakuna historia. Kokotoa adhabu kwanza.</div></div>
 </div>
 </div>
 <div class="section" id="s-info">
 <div class="card">
-<div class="card-title">&#8505;&#65039; Kuhusu SHA</div>
+<div class="card-title" data-i18n="info.title">&#8505;&#65039; Kuhusu SHA</div>
 <div style="font-size:14px;line-height:1.8">
-<p><strong>SHA ni nini?</strong></p>
-<p>Social Health Authority - Mfumo wa bima ya afya Kenya ulioanzishwa kuchukua nafasi ya NHIF.</p>
+<p><strong data-i18n="info.whatIs">SHA ni nini?</strong></p>
+<p data-i18n="info.whatIsBody">Social Health Authority - Mfumo wa bima ya afya Kenya ulioanzishwa kuchukua nafasi ya NHIF.</p>
 <br>
-<p><strong>Malipo</strong></p>
-<p>&bull; Kiasi cha chini: <strong>KES 300/mwezi</strong></p>
-<p>&bull; Tarehe ya mwisho: <strong>Tarehe 9</strong> kila mwezi</p>
-<p>&bull; Paybill: <strong>200222</strong></p>
+<p><strong data-i18n="info.payments">Malipo</strong></p>
+<p>&bull; <span data-i18n="info.bulletMinLabel">Kiasi cha chini:</span> <strong data-i18n="info.bulletMinValue">KES 300/mwezi</strong></p>
+<p>&bull; <span data-i18n="info.bulletDueLabel">Tarehe ya mwisho:</span> <strong data-i18n="info.bulletDueValue">Tarehe 9</strong> <span data-i18n="info.bulletDueSuffix">kila mwezi</span></p>
+<p>&bull; <span data-i18n="info.bulletPaybillLabel">Paybill:</span> <strong>200222</strong></p>
 <br>
-<p><strong>Adhabu</strong></p>
-<p>&bull; 2% kwa kila mwezi uliochelewa</p>
-<p>&bull; Inahesabiwa kutoka SHA Tariff Registry</p>
+<p><strong data-i18n="info.penalty">Adhabu</strong></p>
+<p>&bull; <span data-i18n="info.bulletPenaltyRate">2% kwa kila mwezi uliochelewa</span></p>
+<p>&bull; <span data-i18n="info.bulletPenaltySource">Inahesabiwa kutoka SHA Tariff Registry</span></p>
 <br>
-<p><strong>Watumiaji</strong></p>
-<p>&bull; Wafanyakazi wa sekta rasmi na isiyo rasmi</p>
-<p>&bull; Wanaolipa SHA kwa ajili ya huduma za afya</p>
+<p><strong data-i18n="info.users">Watumiaji</strong></p>
+<p>&bull; <span data-i18n="info.bulletUserFormal">Wafanyakazi wa sekta rasmi na isiyo rasmi</span></p>
+<p>&bull; <span data-i18n="info.bulletUserPay">Wanaolipa SHA kwa ajili ya huduma za afya</span></p>
 </div>
 </div>
 <div class="card">
-<div class="card-title">&#128100; Akaunti</div>
-<div class="acct-row"><span id="acctText">Hujaingia</span><button class="btn btn-ghost" style="width:auto;padding:10px 18px" id="acctBtn" onclick="openAuth()">Ingia</button></div>
+<div class="card-title" data-i18n="info.accountTitle">&#128100; Akaunti</div>
+<div class="acct-row"><span id="acctText" data-i18n="acct.loggedOut">Hujaingia</span><button class="btn btn-ghost" style="width:auto;padding:10px 18px" id="acctBtn" onclick="openAuth()" data-i18n="acct.login">Ingia</button></div>
 </div>
 <div class="card">
-<div class="card-title">&#128222; Msaada</div>
+<div class="card-title" data-i18n="info.supportTitle">&#128222; Msaada</div>
 <div style="font-size:14px;line-height:2">
-<p>&#128231; support@sha-reminder.ke</p>
+<p>&#128231; support@sha-pay.ke</p>
 <p>&#128241; +254 700 000 000</p>
-<p style="font-size:12px;color:var(--muted);margin-top:8px">Tovuti hii haina uhusiano rasmi na SHA. Ni kikokotozi cha makadirio pekee.</p>
+<p style="font-size:12px;color:var(--muted);margin-top:8px" data-i18n="info.disclaimer">Tovuti hii haina uhusiano rasmi na SHA. Ni kikokotozi cha makadirio pekee.</p>
 </div>
 </div>
 </div>
 </div>
 <!-- PWA Install UI -->
-<button id="installFab" onclick="promptInstall()"><span class="ico">&#11015;</span> Sakinisha App</button>
+<button id="installFab" onclick="promptInstall()"><span class="ico">&#11015;</span><span data-i18n="install.fab">Sakinisha App</span></button>
 <div id="installModal" onclick="if(event.target===this)closeInstall()">
   <div class="box">
-    <h3>&#128241; Sakinisha SHA Reminder</h3>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Ili kupata toleo la app linalofanya kazi bila mtandao, fuata hatua hizi:</p>
+    <h3 data-i18n="install.title">&#128241; Sakinisha sha-pay</h3>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:12px" data-i18n="install.intro">Ili kupata toleo la app linalofanya kazi bila mtandao, fuata hatua hizi:</p>
     <ol>
-      <li>Fungua menyu ya <strong>Shiriki</strong> (Share) kwenye kivinjari</li>
-      <li>Chagua <strong>"Ongeza kwenye Skrini ya Nyumbani"</strong> (Add to Home Screen)</li>
-      <li>Bofya <strong>Ongeza</strong> (Add)</li>
+      <li><span data-i18n="install.step1a">Fungua menyu ya</span> <strong data-i18n="install.step1b">Shiriki</strong> <span data-i18n="install.step1c">(Share) kwenye kivinjari</span></li>
+      <li><span data-i18n="install.step2a">Chagua</span> <strong data-i18n="install.step2b">"Ongeza kwenye Skrini ya Nyumbani"</strong> <span data-i18n="install.step2c">(Add to Home Screen)</span></li>
+      <li><span data-i18n="install.step3a">Bofya</span> <strong data-i18n="install.step3b">Ongeza</strong> <span data-i18n="install.step3c">(Add)</span></li>
     </ol>
-    <button class="close" onclick="closeInstall()">&#10005; Funga</button>
+    <button class="close" onclick="closeInstall()" data-i18n="install.close">&#10005; Funga</button>
   </div>
 </div>
 
@@ -245,74 +256,487 @@ Penalty = &Sigma;(amount &times; 0.02 &times; months late)
 <div id="authModal" onclick="if(event.target===this)closeAuth()">
   <div class="box">
     <div id="authStep1">
-      <h3>&#128274; Ingia kwa usalama</h3>
-      <p class="hint">Tutakutumia nambari ya OTP kwa SMS ili kuthibitisha simu yako.</p>
-      <div class="auth-tabs"><button id="tabLogin" class="active" onclick="authMode('login')">Ingia</button><button id="tabReg" onclick="authMode('register')">Jisajili</button></div>
-      <label for="authPhone">Namba ya Simu</label>
+      <h3 data-i18n="auth.title">&#128274; Ingia kwa usalama</h3>
+      <p class="hint" data-i18n="auth.hint">Tutakutumia nambari ya OTP kwa SMS ili kuthibitisha simu yako.</p>
+      <div class="auth-tabs"><button id="tabLogin" class="active" onclick="authMode('login')" data-i18n="auth.tabLogin">Ingia</button><button id="tabReg" onclick="authMode('register')" data-i18n="auth.tabReg">Jisajili</button></div>
+      <label for="authPhone" data-i18n="auth.phoneLabel">Namba ya Simu</label>
       <input type="tel" id="authPhone" placeholder="0712345678" autocomplete="tel">
-      <div id="authIdWrap" style="display:none"><label for="authNid">Namba ya Kitambulisho</label><input type="text" id="authNid" inputmode="numeric" placeholder="Kitambulisho" autocomplete="off"></div>
-      <button class="btn btn-primary" id="authSend" onclick="authSend()">Tuma OTP</button>
+      <div id="authIdWrap" style="display:none"><label for="authNid" data-i18n="auth.nidLabel">Namba ya Kitambulisho</label><input type="text" id="authNid" inputmode="numeric" placeholder="Kitambulisho" autocomplete="off" data-i18n-attr="placeholder:auth.nidPlaceholder"></div>
+      <button class="btn btn-primary" id="authSend" onclick="authSend()" data-i18n="auth.sendBtn">Tuma OTP</button>
     </div>
     <div id="authStep2" style="display:none">
-      <h3>&#128222; Weka OTP</h3>
-      <p class="hint">Nambari ya tarakimu 5 imetumwa kwa <strong id="authSentTo"></strong>.</p>
+      <h3 data-i18n="auth.otpTitle">&#128222; Weka OTP</h3>
+      <p class="hint"><span data-i18n="auth.hintOtp">Nambari ya tarakimu 5 imetumwa kwa</span> <strong id="authSentTo"></strong></p>
       <input type="text" id="authOtp" class="otp-input" inputmode="numeric" maxlength="5" autocomplete="one-time-code" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;">
-      <button class="btn btn-primary" id="authVerify" onclick="authVerify()">Thibitisha</button>
-      <button class="link" id="authResend" onclick="authResend()" disabled>Tuma tena</button>
-      <button class="link" onclick="authBack()">&larr; Badilisha namba</button>
+      <button class="btn btn-primary" id="authVerify" onclick="authVerify()" data-i18n="auth.verifyBtn">Thibitisha</button>
+      <button class="link" id="authResend" onclick="authResend()" disabled data-i18n="auth.resend">Tuma tena</button>
+      <button class="link" onclick="authBack()" data-i18n="auth.back">&larr; Badilisha namba</button>
     </div>
-    <button style="margin-top:14px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%" onclick="closeAuth()">&#10005; Funga</button>
+    <button style="margin-top:14px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:999px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%" onclick="closeAuth()" data-i18n="auth.close">&#10005; Funga</button>
   </div>
 </div>
 
 <nav class="nav">
-<button class="nav-item active" data-s="dash" onclick="go('dash')"><span class="icon">&#127968;</span>Nyumbani</button>
-<button class="nav-item" data-s="penalty" onclick="go('penalty')"><span class="icon">&#129518;</span>Adhabu</button>
-<button class="nav-item" data-s="pay" onclick="go('pay')"><span class="icon">&#128176;</span>Lipa</button>
-<button class="nav-item" data-s="hist" onclick="go('hist')"><span class="icon">&#128202;</span>Historia</button>
-<button class="nav-item" data-s="info" onclick="go('info')"><span class="icon">&#8505;&#65039;</span>Maelezo</button>
+<button class="nav-item active" data-s="dash" onclick="go('dash')"><span class="icon">&#127968;</span><span data-i18n="nav.home">Nyumbani</span></button>
+<button class="nav-item" data-s="penalty" onclick="go('penalty')"><span class="icon">&#129518;</span><span data-i18n="nav.penalty">Adhabu</span></button>
+<button class="nav-item" data-s="pay" onclick="go('pay')"><span class="icon">&#128176;</span><span data-i18n="nav.pay">Lipa</span></button>
+<button class="nav-item" data-s="hist" onclick="go('hist')"><span class="icon">&#128202;</span><span data-i18n="nav.history">Historia</span></button>
+<button class="nav-item" data-s="info" onclick="go('info')"><span class="icon">&#8505;&#65039;</span><span data-i18n="nav.info">Maelezo</span></button>
 </nav>
 <div class="toast" id="toast"></div>
 <script>
 const API=window.location.origin;
+const LANG_KEY='sha_lang';
 let calcs=[];
+let lang='sw';
+
+// ---- i18n dictionary ----
+// Every user-facing string lives here. The `sw` values are the original
+// Kiswahili copy, kept verbatim; `en` holds the English equivalents.
+// Both objects MUST have the identical key set.
+const I18N={
+sw:{
+'meta.title':'sha-pay - Kikumbusho cha Malipo',
+'meta.description':'Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222.',
+'lang.group':'Chagua lugha',
+'lang.switchToSw':'Badilisha lugha kwa Kiswahili',
+'lang.switchToEn':'Badilisha lugha kua Kiingereza',
+'header.tagline':'Kikumbusho cha Malipo na Makadirio ya Adhabu',
+'offline.bar':'Hali ya Mtandao: Haupo mtandaoni - Mahesabu yanafanya kazi',
+'dash.eligLabel':'Hali ya Ustahiki (Eligibility)',
+'dash.eligValue':'Active',
+'dash.eligTag':'WAZI',
+'dash.eligSub':'Akaunti yako iko sawa. Lipa kabla ya tarehe 9.',
+'dash.tilePay':'Lipa M-Pesa',
+'dash.tilePenalty':'Kokotoa Adhabu',
+'dash.tileHistory':'Historia',
+'dash.tileInfo':'Maelezo',
+'dash.summaryTitle':'\u{1F4CA} Muhtasari',
+'dash.sumMinLabel':'Malipo ya Chini:',
+'dash.sumMinValue':'KES 300 kwa mwezi',
+'dash.sumDueLabel':'Tarehe ya Mwisho:',
+'dash.sumDueValue':'Tarehe 9 kila mwezi',
+'dash.sumPenaltyLabel':'Adhabu:',
+'dash.sumPenaltyValue':'2% kwa mwezi uliochelewa',
+'dash.sumPaybillLabel':'Paybill:',
+'penalty.title':'\u{1F9EE} Kokotoa Adhabu',
+'penalty.monthsLabel':'Miezi Uliyokosa (Missed Months)',
+'penalty.amountLabel':'Kiasi cha Mwezi (Monthly Contribution) KES',
+'penalty.calcBtn':'Kokotoa',
+'penalty.rulesTitle':'\u{1F4D6} Kanuni ya Adhabu',
+'penalty.rule':'Adhabu = \u{03A3}(kiasi \u{00D7} 0.02 \u{00D7} miezi iliyochelewa)',
+'penalty.source':'Chanzo: SHA Tariff Registry - Wizara ya Afya. Kiwango: 2% kwa mwezi.',
+'penalty.rowMonths':'Miezi iliyokosa',
+'penalty.rowAmount':'Kiasi cha mwezi',
+'penalty.rowContrib':'Michango',
+'penalty.rowPenalty':'Adhabu (2%)',
+'penalty.rowTotal':'Jumla ya Kulipa',
+'penalty.breakdownTitle':'Maelezo kwa Kila Mwezi',
+'penalty.thMonth':'Mwezi',
+'penalty.thAmount':'Kiasi',
+'penalty.thPenalty':'Adhabu',
+'penalty.thTotal':'Jumla',
+'penalty.monthRow':'Mwezi {n}',
+'pay.paybillLabel':'Nambari ya Biashara (Paybill)',
+'pay.accountLabel':'Akaunti: Namba yako ya Kitambulisho',
+'pay.copyBtn':'\u{1F4CB} Nakili Paybill',
+'pay.lockTitle':'\u{1F512} Ingia ili ulipe',
+'pay.lockText':'Kwa usalama wako, malipo ya M-Pesa yanahitaji kuthibitisha simu yako kwa OTP.',
+'pay.lockBtn':'Ingia / Jisajili',
+'pay.title':'\u{1F4B3} Lipa M-Pesa',
+'pay.phoneLabel':'Namba ya Simu (Safaricom)',
+'pay.amountLabel':'Kiasi cha Kulipa (KES)',
+'pay.autoAccount':'Akaunti: Kitambulisho chako kilichosajiliwa kinatumika kiotomatiki.',
+'pay.payBtn':'\u{1F4B3} Lipa kwa M-Pesa',
+'pay.sending':'Inatuma ...',
+'pay.stepsTitle':'Hatua za Kulipa (Mwongozo):',
+'pay.step1a':'Nenda kwa',
+'pay.step1b':'kwenye simu yako',
+'pay.step2a':'Chagua',
+'pay.step2b':'"Lipa na M-Pesa"',
+'pay.step2c':'"Paybill"',
+'pay.step3':'Weka Namba ya Biashara:',
+'pay.step4a':'Weka Akaunti:',
+'pay.step4b':'Namba yako ya Kitambulisho',
+'pay.step5a':'Weka Kiasi:',
+'pay.step5b':'KES 300 au zaidi',
+'pay.step6a':'Weka PIN yako na',
+'pay.step6b':'Thibitisha',
+'pay.shareBtn':'\u{1F4E4} Shiriki Paybill',
+'pay.shareTitle':'Malipo ya SHA',
+'pay.shareText':'Lipa SHA yako:\nPaybill: 200222\nAkaunti: Namba yako ya Kitambulisho\nKiasi: KES 300+',
+'pay.txDesc':'Malipo ya SHA',
+'stk.okTitle':'\u{2705} Ombi limefanikiwa!',
+'stk.status':'Hali',
+'stk.statusValue':'Angalia simu yako kwa STK Push',
+'stk.amount':'Kiasi',
+'stk.failTitle':'\u{274C} Ombi halijafanikiwa',
+'hist.title':'\u{1F4CA} Historia Yako',
+'hist.empty':'Bado hakuna historia. Kokotoa adhabu kwanza.',
+'hist.rowMonths':'Miezi {m}',
+'hist.rowPenalty':'Adhabu: {p}',
+'info.title':'\u{2139}\u{FE0F} Kuhusu SHA',
+'info.whatIs':'SHA ni nini?',
+'info.whatIsBody':'Social Health Authority - Mfumo wa bima ya afya Kenya ulioanzishwa kuchukua nafasi ya NHIF.',
+'info.payments':'Malipo',
+'info.bulletMinLabel':'Kiasi cha chini:',
+'info.bulletMinValue':'KES 300/mwezi',
+'info.bulletDueLabel':'Tarehe ya mwisho:',
+'info.bulletDueValue':'Tarehe 9',
+'info.bulletDueSuffix':'kila mwezi',
+'info.bulletPaybillLabel':'Paybill:',
+'info.penalty':'Adhabu',
+'info.bulletPenaltyRate':'2% kwa kila mwezi uliochelewa',
+'info.bulletPenaltySource':'Inahesabiwa kutoka SHA Tariff Registry',
+'info.users':'Watumiaji',
+'info.bulletUserFormal':'Wafanyakazi wa sekta rasmi na isiyo rasmi',
+'info.bulletUserPay':'Wanaolipa SHA kwa ajili ya huduma za afya',
+'info.accountTitle':'\u{1F464} Akaunti',
+'info.supportTitle':'\u{1F4DE} Msaada',
+'info.disclaimer':'Tovuti hii haina uhusiano rasmi na SHA. Ni kikokotozi cha makadirio pekee.',
+'acct.loggedOut':'Hujaingia',
+'acct.loggedIn':'Umeingia: {p}',
+'acct.login':'Ingia',
+'acct.logout':'Toka',
+'install.fab':'Sakinisha App',
+'install.title':'\u{1F4F1} Sakinisha sha-pay',
+'install.intro':'Ili kupata toleo la app linalofanya kazi bila mtandao, fuata hatua hizi:',
+'install.step1a':'Fungua menyu ya',
+'install.step1b':'Shiriki',
+'install.step1c':'(Share) kwenye kivinjari',
+'install.step2a':'Chagua',
+'install.step2b':'"Ongeza kwenye Skrini ya Nyumbani"',
+'install.step2c':'(Add to Home Screen)',
+'install.step3a':'Bofya',
+'install.step3b':'Ongeza',
+'install.step3c':'(Add)',
+'install.close':'\u{2715} Funga',
+'install.toast':'Fungua menyu ya kivinjari na uchague "Sakinisha app"',
+'auth.title':'\u{1F512} Ingia kwa usalama',
+'auth.hint':'Tutakutumia nambari ya OTP kwa SMS ili kuthibitisha simu yako.',
+'auth.tabLogin':'Ingia',
+'auth.tabReg':'Jisajili',
+'auth.phoneLabel':'Namba ya Simu',
+'auth.nidLabel':'Namba ya Kitambulisho',
+'auth.nidPlaceholder':'Kitambulisho',
+'auth.sendBtn':'Tuma OTP',
+'auth.otpTitle':'\u{1F4DE} Weka OTP',
+'auth.hintOtp':'Nambari ya tarakimu 5 imetumwa kwa',
+'auth.verifyBtn':'Thibitisha',
+'auth.resend':'Tuma tena',
+'auth.resendWith':'Tuma tena ({n})',
+'auth.back':'\u{2190} Badilisha namba',
+'auth.close':'\u{2715} Funga',
+'nav.home':'Nyumbani',
+'nav.penalty':'Adhabu',
+'nav.pay':'Lipa',
+'nav.history':'Historia',
+'nav.info':'Maelezo',
+'toast.copied':'Paybill 200222 imenakiliwa!',
+'toast.paybillNumber':'200222',
+'toast.minAmount':'Kiasi cha chini ni KES 300',
+'toast.checkPhone':'Angalia simu yako! STK Push imetumwa.',
+'toast.stkFailed':'STK Push imeshindwa. Jaribu tena.',
+'toast.netErrServer':'Hitilafu ya mtandao. Hakikisha server iko sawa.',
+'toast.monthsRequired':'Tafadhali weka idadi ya miezi',
+'toast.badPhone':'Weka namba ya simu sahihi (0712345678)',
+'toast.badNid':'Weka namba ya kitambulisho sahihi',
+'toast.rateLimited':'Maombi mengi. Subiri kidogo.',
+'toast.testOtp':'OTP ya majaribio: {otp}',
+'toast.otpRequired':'Weka OTP ya tarakimu 5',
+'toast.netErr':'Hitilafu ya mtandao.',
+'toast.newOtp':'OTP mpya imetumwa',
+'toast.signedIn':'Umeingia kikamilifu!',
+'toast.sessionExpired':'Kipindi kimeisha. Ingia tena.',
+'toast.signedOut':'Umetoka.',
+'toast.tryLater':'Jaribu tena baadaye.'
+},
+en:{
+'meta.title':'sha-pay - Payment Reminder',
+'meta.description':'SHA payment reminders and penalty estimates. Pay via M-Pesa Paybill 200222.',
+'lang.group':'Choose language',
+'lang.switchToSw':'Switch to Swahili',
+'lang.switchToEn':'Switch to English',
+'header.tagline':'Payment Reminders and Penalty Estimates',
+'offline.bar':'Network status: You are offline - the calculator still works',
+'dash.eligLabel':'Eligibility Status',
+'dash.eligValue':'Active',
+'dash.eligTag':'CLEAR',
+'dash.eligSub':'Your account is in good standing. Pay before the 9th.',
+'dash.tilePay':'Pay with M-Pesa',
+'dash.tilePenalty':'Calculate Penalty',
+'dash.tileHistory':'History',
+'dash.tileInfo':'Info',
+'dash.summaryTitle':'\u{1F4CA} Summary',
+'dash.sumMinLabel':'Minimum payment:',
+'dash.sumMinValue':'KES 300 per month',
+'dash.sumDueLabel':'Due date:',
+'dash.sumDueValue':'the 9th of every month',
+'dash.sumPenaltyLabel':'Penalty:',
+'dash.sumPenaltyValue':'2% for every month overdue',
+'dash.sumPaybillLabel':'Paybill:',
+'penalty.title':'\u{1F9EE} Calculate Penalty',
+'penalty.monthsLabel':'Missed Months',
+'penalty.amountLabel':'Monthly Contribution (KES)',
+'penalty.calcBtn':'Calculate',
+'penalty.rulesTitle':'\u{1F4D6} Penalty Rules',
+'penalty.rule':'Penalty = \u{03A3}(amount \u{00D7} 0.02 \u{00D7} months late)',
+'penalty.source':'Source: SHA Tariff Registry - Ministry of Health. Rate: 2% per month.',
+'penalty.rowMonths':'Months missed',
+'penalty.rowAmount':'Monthly amount',
+'penalty.rowContrib':'Contributions',
+'penalty.rowPenalty':'Penalty (2%)',
+'penalty.rowTotal':'Total to pay',
+'penalty.breakdownTitle':'Month-by-Month Breakdown',
+'penalty.thMonth':'Month',
+'penalty.thAmount':'Amount',
+'penalty.thPenalty':'Penalty',
+'penalty.thTotal':'Total',
+'penalty.monthRow':'Month {n}',
+'pay.paybillLabel':'Paybill Number',
+'pay.accountLabel':'Account: Your National ID number',
+'pay.copyBtn':'\u{1F4CB} Copy Paybill',
+'pay.lockTitle':'\u{1F512} Sign in to pay',
+'pay.lockText':'For your security, M-Pesa payments need you to verify your phone number with an OTP.',
+'pay.lockBtn':'Sign in / Sign up',
+'pay.title':'\u{1F4B3} Pay with M-Pesa',
+'pay.phoneLabel':'Phone Number (Safaricom)',
+'pay.amountLabel':'Amount to Pay (KES)',
+'pay.autoAccount':'Account: Your registered National ID number is used automatically.',
+'pay.payBtn':'\u{1F4B3} Pay with M-Pesa',
+'pay.sending':'Sending ...',
+'pay.stepsTitle':'How to Pay (Steps):',
+'pay.step1a':'Open',
+'pay.step1b':'on your phone',
+'pay.step2a':'Choose',
+'pay.step2b':'"Lipa na M-Pesa"',
+'pay.step2c':'"Paybill"',
+'pay.step3':'Enter the Paybill number:',
+'pay.step4a':'Enter Account:',
+'pay.step4b':'Your National ID number',
+'pay.step5a':'Enter Amount:',
+'pay.step5b':'KES 300 or more',
+'pay.step6a':'Enter your PIN and tap',
+'pay.step6b':'Confirm',
+'pay.shareBtn':'\u{1F4E4} Share Paybill',
+'pay.shareTitle':'SHA Payment',
+'pay.shareText':'Pay your SHA:\nPaybill: 200222\nAccount: Your National ID number\nAmount: KES 300+',
+'pay.txDesc':'SHA Payment',
+'stk.okTitle':'\u{2705} Request successful!',
+'stk.status':'Status',
+'stk.statusValue':'Check your phone for the STK push',
+'stk.amount':'Amount',
+'stk.failTitle':'\u{274C} Request failed',
+'hist.title':'\u{1F4CA} Your History',
+'hist.empty':'No history yet. Calculate a penalty first.',
+'hist.rowMonths':'{m} months',
+'hist.rowPenalty':'Penalty: {p}',
+'info.title':'\u{2139}\u{FE0F} About SHA',
+'info.whatIs':'What is SHA?',
+'info.whatIsBody':'Social Health Authority - the Kenyan health insurance system, set up to replace NHIF.',
+'info.payments':'Payments',
+'info.bulletMinLabel':'Minimum amount:',
+'info.bulletMinValue':'KES 300/month',
+'info.bulletDueLabel':'Due date:',
+'info.bulletDueValue':'the 9th',
+'info.bulletDueSuffix':'of every month',
+'info.bulletPaybillLabel':'Paybill:',
+'info.penalty':'Penalty',
+'info.bulletPenaltyRate':'2% for every month missed',
+'info.bulletPenaltySource':'Calculated from the SHA Tariff Registry',
+'info.users':'Users',
+'info.bulletUserFormal':'Workers in both the formal and informal sectors',
+'info.bulletUserPay':'People who pay SHA for health services',
+'info.accountTitle':'\u{1F464} Account',
+'info.supportTitle':'\u{1F4DE} Support',
+'info.disclaimer':'This site is not officially affiliated with SHA. It is only a calculator tool for estimates.',
+'acct.loggedOut':'Not signed in',
+'acct.loggedIn':'Signed in: {p}',
+'acct.login':'Sign in',
+'acct.logout':'Sign out',
+'install.fab':'Install App',
+'install.title':'\u{1F4F1} Install sha-pay',
+'install.intro':'To get the offline version of the app, follow these steps:',
+'install.step1a':'Open the',
+'install.step1b':'Share',
+'install.step1c':'menu in your browser',
+'install.step2a':'Choose',
+'install.step2b':'"Add to Home Screen"',
+'install.step2c':'on your phone',
+'install.step3a':'Tap',
+'install.step3b':'Add',
+'install.step3c':'to confirm',
+'install.close':'\u{2715} Close',
+'install.toast':'Open your browser menu and choose "Install app"',
+'auth.title':'\u{1F512} Secure sign-in',
+'auth.hint':'We will send you an OTP by SMS to verify your phone number.',
+'auth.tabLogin':'Sign in',
+'auth.tabReg':'Sign up',
+'auth.phoneLabel':'Phone number',
+'auth.nidLabel':'National ID number',
+'auth.nidPlaceholder':'National ID',
+'auth.sendBtn':'Send OTP',
+'auth.otpTitle':'\u{1F4DE} Enter OTP',
+'auth.hintOtp':'A 5-digit code has been sent to',
+'auth.verifyBtn':'Verify',
+'auth.resend':'Resend',
+'auth.resendWith':'Resend ({n})',
+'auth.back':'\u{2190} Change number',
+'auth.close':'\u{2715} Close',
+'nav.home':'Home',
+'nav.penalty':'Penalty',
+'nav.pay':'Pay',
+'nav.history':'History',
+'nav.info':'Info',
+'toast.copied':'Paybill 200222 copied!',
+'toast.paybillNumber':'200222',
+'toast.minAmount':'The minimum amount is KES 300',
+'toast.checkPhone':'Check your phone! The STK push has been sent.',
+'toast.stkFailed':'STK push failed. Please try again.',
+'toast.netErrServer':'Network error. Make sure the server is running.',
+'toast.monthsRequired':'Please enter the number of months',
+'toast.badPhone':'Enter a valid phone number (0712345678)',
+'toast.badNid':'Enter a valid National ID number',
+'toast.rateLimited':'Too many requests. Please wait a moment.',
+'toast.testOtp':'Test OTP: {otp}',
+'toast.otpRequired':'Enter the 5-digit OTP',
+'toast.netErr':'Network error.',
+'toast.newOtp':'A new OTP has been sent',
+'toast.signedIn':'You are now signed in!',
+'toast.sessionExpired':'Your session has expired. Please sign in again.',
+'toast.signedOut':'You have signed out.',
+'toast.tryLater':'Please try again later.'
+}
+};
+
+// ---- i18n helpers ----
+function t(key,vars){
+  let s=(I18N[lang]&&I18N[lang][key]);
+  if(typeof s!=='string')s=I18N.sw[key];
+  if(typeof s!=='string')return key;
+  if(vars)s=s.replace(/\{(\w+)\}/g,(m,k)=>(vars&&vars[k]!==undefined)?String(vars[k]):m);
+  return s;
+}
+function applyLang(l){
+  lang=(l==='en'||l==='sw')?l:'sw';
+  document.documentElement.lang=lang;
+  const dict=I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(Object.prototype.hasOwnProperty.call(dict,k))el.textContent=dict[k];
+  });
+  document.querySelectorAll('[data-i18n-attr]').forEach(el=>{
+    el.getAttribute('data-i18n-attr').split(',').forEach(pair=>{
+      const i=pair.indexOf(':');
+      if(i<0)return;
+      const attr=pair.slice(0,i).trim(),key=pair.slice(i+1).trim();
+      if(Object.prototype.hasOwnProperty.call(dict,key))el.setAttribute(attr,dict[key]);
+    });
+  });
+  const swBtn=document.getElementById('langSw'),enBtn=document.getElementById('langEn');
+  swBtn.classList.toggle('active',lang==='sw');
+  enBtn.classList.toggle('active',lang==='en');
+  swBtn.setAttribute('aria-pressed',lang==='sw'?'true':'false');
+  enBtn.setAttribute('aria-pressed',lang==='en'?'true':'false');
+  // Dynamic (runtime rendered) content is re-rendered in the new language.
+  updateAuthUI();
+  updateResendBtn();
+  setStkBusy(stkBusy);
+  renderPenalty();
+  renderHist();
+  renderStk();
+  if(lastToast&&lastToast.key){
+    const el=document.getElementById('toast');
+    if(el.style.display!=='none')el.textContent=t(lastToast.key,lastToast.vars);
+  }
+}
+function setLang(l){try{localStorage.setItem(LANG_KEY,l)}catch(e){}applyLang(l)}
+
 function go(s){document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.s===s));window.scrollTo(0,0)}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',3000)}
-function copyPB(){navigator.clipboard.writeText('200222').then(()=>toast('Paybill 200222 imenakiliwa!')).catch(()=>toast('200222'))}
-function sharePB(){const t='Lipa SHA yako:\nPaybill: 200222\nAkaunti: Namba yako ya Kitambulisho\nKiasi: KES 300+';if(navigator.share)navigator.share({title:'SHA Payment',text:t}).catch(()=>{});else copyPB()}
+let lastToast=null,toastTimer=null;
+function toast(msg,vars){
+  const isKey=Object.prototype.hasOwnProperty.call(I18N.sw,msg);
+  lastToast={key:isKey?msg:null,raw:isKey?null:msg,vars:vars||null};
+  const el=document.getElementById('toast');
+  el.textContent=isKey?t(msg,vars):msg;
+  el.style.display='block';
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.style.display='none';lastToast=null},3000);
+}
+function copyPB(){navigator.clipboard.writeText('200222').then(()=>toast('toast.copied')).catch(()=>toast('toast.paybillNumber'))}
+function sharePB(){const txt=t('pay.shareText');if(navigator.share)navigator.share({title:t('pay.shareTitle'),text:txt}).catch(()=>{});else copyPB()}
 // STK Push - Direct M-Pesa Payment via Daraja API
-document.getElementById('stkForm').addEventListener('submit',async function(e){e.preventDefault();const btn=document.getElementById('stkBtn');const amount=parseFloat(document.getElementById('stkAmount').value);if(!isAuthed()){openAuth();return}if(!amount||amount<300){toast('Kiasi cha chini ni KES 300');return}btn.disabled=true;btn.textContent='Inatuma ...';const div=document.getElementById('stkResult');try{const r=await api('/api/v1/payments/stk-push',{method:'POST',body:JSON.stringify({phone_number:ls(PH),amount:amount,transaction_desc:'SHA Payment'})});if(r.status===401){logout(true);return}if(r.ok&&r.data.success){div.style.display='block';div.innerHTML='<div class="result-box" style="margin-top:0"><div style="font-size:15px;font-weight:600;color:var(--green-dark);margin-bottom:8px">&#9989; Ombi limefanikiwa!</div><div class="result-row"><span>Hali</span><span>Angalia simu yako kwa STK Push</span></div><div class="result-row"><span>Kiasi</span><span class="money">KES '+amount.toFixed(2)+'</span></div><div class="result-row"><span>Paybill</span><span>200222</span></div></div>';toast('Angalia simu yako! STK Push imetumwa.')}else{div.style.display='block';div.innerHTML='<div class="result-box" style="background:#fef2f2;margin-top:0"><div style="color:var(--red);font-weight:600;margin-bottom:4px">&#10060; Ombi halijafanikiwa</div><div style="font-size:13px;color:var(--muted)">'+esc(errMsg(r))+'</div></div>';toast('STK Push imeshindwa. Jaribu tena.')}}catch(err){toast('Hitilafu ya mtandao. Hakikisha server iko sawa.')}finally{btn.disabled=false;btn.innerHTML='&#128179; Lipa kwa M-Pesa'}});
-function calc(m,a){const r=0.02,x=12,mm=Math.min(m,x),t=mm*a;let p=0,bd=[];for(let i=1;i<=mm;i++){const mp=a*r;p+=mp;bd.push({m:i,n:'Mwezi '+i,c:a,p:mp,r:(a*i)+(mp*i)})}return{months:mm,cont:a,total:t,penalty:p,due:t+p,bd:bd}}
-function renderHist(){const d=document.getElementById('historyList');if(calcs.length===0){d.innerHTML='<div class="empty">Bado hakuna historia. Kokotoa adhabu kwanza.</div>';return}d.innerHTML=calcs.map(c=>'<div class="result-box" style="margin-top:0;margin-bottom:8px"><div class="result-row"><span>Miezi '+c.months+' @ KES '+c.cont+'</span><span class="money">KES '+c.due.toFixed(0)+'</span></div><div class="result-row"><span style="color:var(--muted)">Adhabu: KES '+c.penalty.toFixed(0)+'</span><span style="color:var(--muted);font-size:12px">'+c.date+'</span></div></div>').join('')}
-document.getElementById('penaltyForm').addEventListener('submit',function(e){e.preventDefault();const m=parseInt(document.getElementById('missedMonths').value);const a=parseFloat(document.getElementById('monthlyAmount').value);if(!m||m<1){toast('Tafadhali weka idadi ya miezi');return}if(!a||a<300){toast('Kiasi cha chini ni KES 300');return}const r=calc(m,a);const div=document.getElementById('penaltyResult');let rows='';r.bd.forEach(b=>{rows+='<tr><td>'+b.n+'</td><td>KES '+b.c.toFixed(2)+'</td><td>KES '+b.p.toFixed(2)+'</td><td>KES '+b.r.toFixed(2)+'</td></tr>'});div.style.display='block';div.innerHTML='<div class="result-box"><div class="result-row"><span>Miezi iliyokosa</span><span>'+r.months+'</span></div><div class="result-row"><span>Kiasi cha mwezi</span><span class="money">KES '+r.cont.toFixed(2)+'</span></div><div class="result-row"><span>Michango</span><span class="money">KES '+r.total.toFixed(2)+'</span></div><div class="result-row"><span>Adhabu (2%)</span><span class="money" style="color:var(--red)">KES '+r.penalty.toFixed(2)+'</span></div><div class="result-row total"><span>Jumla ya Kulipa</span><span class="money">KES '+r.due.toFixed(2)+'</span></div></div><h3 style="font-size:14px;margin:16px 0 8px">Maelezo kwa Kila Mwezi</h3><table><thead><tr><th>Mwezi</th><th>Kiasi</th><th>Adhabu</th><th>Jumla</th></tr></thead><tbody>'+rows+'</tbody></table>';calcs.unshift({...r,date:new Date().toLocaleString('sw-KE')});renderHist()});
+let lastStk=null,stkBusy=false;
+function setStkBusy(v){stkBusy=v;const b=document.getElementById('stkBtn');if(v){b.textContent=t('pay.sending')}else{b.innerHTML='<span aria-hidden="true">&#128179;</span> <span>'+t('pay.payBtn')+'</span>'}}
+function renderStk(){
+  const div=document.getElementById('stkResult');
+  if(!lastStk)return;
+  div.style.display='block';
+  if(lastStk.ok){
+    div.innerHTML='<div class="result-box" style="margin-top:0"><div style="font-size:15px;font-weight:600;color:var(--green-dark);margin-bottom:8px">'+t('stk.okTitle')+'</div><div class="result-row"><span>'+t('stk.status')+'</span><span>'+t('stk.statusValue')+'</span></div><div class="result-row"><span>'+t('stk.amount')+'</span><span class="money">KES '+lastStk.amount.toFixed(2)+'</span></div><div class="result-row"><span>Paybill</span><span>200222</span></div></div>';
+  }else{
+    div.innerHTML='<div class="result-box" style="background:#fef2f2;margin-top:0"><div style="color:var(--red);font-weight:600;margin-bottom:4px">'+t('stk.failTitle')+'</div><div style="font-size:13px;color:var(--muted)">'+esc(lastStk.msg)+'</div></div>';
+  }
+}
+document.getElementById('stkForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('stkBtn');
+  const amount=parseFloat(document.getElementById('stkAmount').value);
+  if(!isAuthed()){openAuth();return}
+  if(!amount||amount<300){toast('toast.minAmount');return}
+  btn.disabled=true;setStkBusy(true);
+  try{
+    const r=await api('/api/v1/payments/stk-push',{method:'POST',body:JSON.stringify({phone_number:ls(PH),amount:amount,transaction_desc:t('pay.txDesc')})});
+    if(r.status===401){logout(true);return}
+    if(r.ok&&r.data.success){lastStk={ok:true,amount:amount};renderStk();toast('toast.checkPhone')}
+    else{lastStk={ok:false,msg:errMsg(r)};renderStk();toast('toast.stkFailed')}
+  }catch(err){toast('toast.netErrServer')}
+  finally{btn.disabled=false;setStkBusy(false)}
+});
+function calc(m,a){const r=0.02,x=12,mm=Math.min(m,x),tot=mm*a;let p=0,bd=[];for(let i=1;i<=mm;i++){const mp=a*r;p+=mp;bd.push({m:i,n:i,c:a,p:mp,r:(a*i)+(mp*i)})}return{months:mm,cont:a,total:tot,penalty:p,due:tot+p,bd:bd}}
+let lastCalc=null;
+function renderPenalty(){
+  const div=document.getElementById('penaltyResult');
+  if(!lastCalc)return;
+  const r=lastCalc;let rows='';
+  r.bd.forEach(b=>{rows+='<tr><td>'+t('penalty.monthRow',{n:b.n})+'</td><td>KES '+b.c.toFixed(2)+'</td><td>KES '+b.p.toFixed(2)+'</td><td>KES '+b.r.toFixed(2)+'</td></tr>'});
+  div.style.display='block';
+  div.innerHTML='<div class="result-box"><div class="result-row"><span>'+t('penalty.rowMonths')+'</span><span>'+r.months+'</span></div><div class="result-row"><span>'+t('penalty.rowAmount')+'</span><span class="money">KES '+r.cont.toFixed(2)+'</span></div><div class="result-row"><span>'+t('penalty.rowContrib')+'</span><span class="money">KES '+r.total.toFixed(2)+'</span></div><div class="result-row"><span>'+t('penalty.rowPenalty')+'</span><span class="money" style="color:var(--red)">KES '+r.penalty.toFixed(2)+'</span></div><div class="result-row total"><span>'+t('penalty.rowTotal')+'</span><span class="money">KES '+r.due.toFixed(2)+'</span></div></div><h3 style="font-size:14px;margin:16px 0 8px">'+t('penalty.breakdownTitle')+'</h3><table><thead><tr><th>'+t('penalty.thMonth')+'</th><th>'+t('penalty.thAmount')+'</th><th>'+t('penalty.thPenalty')+'</th><th>'+t('penalty.thTotal')+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function renderHist(){
+  const d=document.getElementById('historyList');
+  if(calcs.length===0){d.innerHTML='<div class="empty">'+t('hist.empty')+'</div>';return}
+  d.innerHTML=calcs.map(c=>'<div class="result-box" style="margin-top:0;margin-bottom:8px"><div class="result-row"><span>'+t('hist.rowMonths',{m:c.months})+' @ KES '+c.cont+'</span><span class="money">KES '+c.due.toFixed(0)+'</span></div><div class="result-row"><span style="color:var(--muted)">'+t('hist.rowPenalty',{p:'KES '+c.penalty.toFixed(0)})+'</span><span style="color:var(--muted);font-size:12px">'+new Date(c.ts).toLocaleString(lang==='en'?'en-KE':'sw-KE')+'</span></div></div>').join('')
+}
+document.getElementById('penaltyForm').addEventListener('submit',function(e){e.preventDefault();const m=parseInt(document.getElementById('missedMonths').value);const a=parseFloat(document.getElementById('monthlyAmount').value);if(!m||m<1){toast('toast.monthsRequired');return}if(!a||a<300){toast('toast.minAmount');return}lastCalc=calc(m,a);renderPenalty();calcs.unshift({...lastCalc,ts:Date.now()});renderHist()});
 function checkOnline(){document.getElementById('offlineBar').classList.toggle('show',!navigator.onLine)}
 window.addEventListener('online',checkOnline);window.addEventListener('offline',checkOnline);checkOnline();
-setTimeout(()=>{if(calcs.length===0){const r=calc(3,300);calcs.unshift({...r,date:new Date().toLocaleString('sw-KE')});renderHist()}},500);
+setTimeout(()=>{if(calcs.length===0){const r=calc(3,300);calcs.unshift({...r,ts:Date.now()});renderHist()}},500);
 
 // ---- Auth (OTP) ----
 const TK='sha_token',PH='sha_phone';
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
 function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function normPhone(p){p=p.replace(/\D/g,'');if(p.startsWith('0'))p='254'+p.slice(1);else if(p.length===9)p='254'+p;return p}
-function isAuthed(){const t=ls(TK);if(!t)return false;try{const pl=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return pl.exp*1000>Date.now()}catch(e){return false}}
-async function api(path,opts){const h={'Content-Type':'application/json'};const t=ls(TK);if(t)h.Authorization='Bearer '+t;const r=await fetch(API+path,Object.assign({},opts,{headers:h}));let d={};try{d=await r.json()}catch(e){}return{ok:r.ok,status:r.status,data:d}}
-function errMsg(r){const d=r.data&&r.data.detail;if(typeof d==='string')return d;if(Array.isArray(d)&&d[0]&&d[0].msg)return d[0].msg.replace(/^Value error, /,'');return 'Jaribu tena baadaye.'}
-let authM='login',authPh='',cdTimer=null;
+function isAuthed(){const tk=ls(TK);if(!tk)return false;try{const pl=JSON.parse(atob(tk.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return pl.exp*1000>Date.now()}catch(e){return false}}
+async function api(path,opts){const h={'Content-Type':'application/json','Accept-Language':lang};const tok=ls(TK);if(tok)h.Authorization='Bearer '+tok;const r=await fetch(API+path,Object.assign({},opts,{headers:h}));let d={};try{d=await r.json()}catch(e){}return{ok:r.ok,status:r.status,data:d}}
+function errMsg(r){const d=r.data&&r.data.detail;if(typeof d==='string')return d;if(Array.isArray(d)&&d[0]&&d[0].msg)return d[0].msg.replace(/^Value error, /,'');return t('toast.tryLater')}
+let authM='login',authPh='',cdTimer=null,cdRemain=null,cdEnabled=false;
 function authMode(m){authM=m;document.getElementById('tabLogin').classList.toggle('active',m==='login');document.getElementById('tabReg').classList.toggle('active',m==='register');document.getElementById('authIdWrap').style.display=m==='register'?'block':'none'}
 function authStep(n){document.getElementById('authStep1').style.display=n===1?'block':'none';document.getElementById('authStep2').style.display=n===2?'block':'none'}
 function openAuth(){document.getElementById('authModal').classList.add('show');authStep(1);setTimeout(()=>document.getElementById('authPhone').focus(),50)}
 function closeAuth(){document.getElementById('authModal').classList.remove('show')}
 function authBack(){clearInterval(cdTimer);authStep(1)}
-function startCooldown(sec){const b=document.getElementById('authResend');clearInterval(cdTimer);let n=sec;b.disabled=true;b.textContent='Tuma tena ('+n+')';cdTimer=setInterval(()=>{n--;if(n<=0){clearInterval(cdTimer);b.disabled=false;b.textContent='Tuma tena'}else b.textContent='Tuma tena ('+n+')'},1000)}
-function otpResult(r){const dbg=(r.data.data&&r.data.data.debug_otp)||r.data.debug_otp;if(dbg)toast('OTP ya majaribio: '+dbg)}
-async function authSend(){const btn=document.getElementById('authSend');const phone=normPhone(document.getElementById('authPhone').value);if(!/^254[17]\d{8}$/.test(phone)){toast('Weka namba ya simu sahihi (0712345678)');return}const body={phone_number:phone};if(authM==='register'){const nid=document.getElementById('authNid').value.trim();if(!/^\d{5,10}$/.test(nid)){toast('Weka namba ya kitambulisho sahihi');return}body.national_id=nid}btn.disabled=true;try{const r=await api(authM==='register'?'/api/v1/auth/register':'/api/v1/auth/login',{method:'POST',body:JSON.stringify(body)});if(!r.ok){toast(r.status===429?'Maombi mengi. Subiri kidogo.':errMsg(r));return}authPh=phone;document.getElementById('authSentTo').textContent='0'+phone.slice(3);document.getElementById('authOtp').value='';authStep(2);startCooldown(60);otpResult(r);setTimeout(()=>document.getElementById('authOtp').focus(),50)}catch(e){toast('Hitilafu ya mtandao.')}finally{btn.disabled=false}}
-async function authVerify(){const btn=document.getElementById('authVerify');const otp=document.getElementById('authOtp').value.trim();if(!/^\d{5}$/.test(otp)){toast('Weka OTP ya tarakimu 5');return}btn.disabled=true;try{const r=await api('/api/v1/auth/verify-otp',{method:'POST',body:JSON.stringify({phone_number:authPh,otp_code:otp})});if(!r.ok||!r.data.success){toast(errMsg(r));return}ls(TK,r.data.data.access_token);ls(PH,authPh);closeAuth();updateAuthUI();toast('Umeingia kikamilifu!');go('pay')}catch(e){toast('Hitilafu ya mtandao.')}finally{btn.disabled=false}}
-async function authResend(){try{const r=await api('/api/v1/auth/resend-otp',{method:'POST',body:JSON.stringify({phone_number:authPh})});if(!r.ok){toast(r.status===429?'Maombi mengi. Subiri kidogo.':errMsg(r));return}startCooldown(60);otpResult(r);toast('OTP mpya imetumwa')}catch(e){toast('Hitilafu ya mtandao.')}}
-function logout(expired){ls(TK,null);ls(PH,null);updateAuthUI();if(expired){toast('Kipindi kimeisha. Ingia tena.');openAuth()}else toast('Umetoka.')}
-function updateAuthUI(){const a=isAuthed();if(!a){ls(TK,null)}document.getElementById('payLock').style.display=a?'none':'block';document.getElementById('payBody').style.display=a?'block':'none';const ph=ls(PH);document.getElementById('acctText').textContent=a&&ph?'Umeingia: 0'+ph.slice(3):'Hujaingia';const b=document.getElementById('acctBtn');b.textContent=a?'Toka':'Ingia';b.onclick=a?()=>logout():openAuth;if(a&&ph)document.getElementById('phoneNumber').value='0'+ph.slice(3)}
+function updateResendBtn(){const b=document.getElementById('authResend');b.disabled=!cdEnabled;b.textContent=cdRemain===null?t('auth.resend'):t('auth.resendWith',{n:cdRemain})}
+function startCooldown(sec){clearInterval(cdTimer);cdRemain=sec;cdEnabled=false;updateResendBtn();cdTimer=setInterval(()=>{cdRemain--;if(cdRemain<=0){cdRemain=null;cdEnabled=true;clearInterval(cdTimer)}updateResendBtn()},1000)}
+function otpResult(r){const dbg=(r.data.data&&r.data.data.debug_otp)||r.data.debug_otp;if(dbg)toast('toast.testOtp',{otp:dbg})}
+async function authSend(){const btn=document.getElementById('authSend');const phone=normPhone(document.getElementById('authPhone').value);if(!/^254[17]\d{8}$/.test(phone)){toast('toast.badPhone');return}const body={phone_number:phone,preferred_language:lang};if(authM==='register'){const nid=document.getElementById('authNid').value.trim();if(!/^\d{5,10}$/.test(nid)){toast('toast.badNid');return}body.national_id=nid}btn.disabled=true;try{const r=await api(authM==='register'?'/api/v1/auth/register':'/api/v1/auth/login',{method:'POST',body:JSON.stringify(body)});if(!r.ok){toast(r.status===429?'toast.rateLimited':errMsg(r));return}authPh=phone;document.getElementById('authSentTo').textContent='0'+phone.slice(3);document.getElementById('authOtp').value='';authStep(2);startCooldown(60);otpResult(r);setTimeout(()=>document.getElementById('authOtp').focus(),50)}catch(e){toast('toast.netErr')}finally{btn.disabled=false}}
+async function authVerify(){const btn=document.getElementById('authVerify');const otp=document.getElementById('authOtp').value.trim();if(!/^\d{5}$/.test(otp)){toast('toast.otpRequired');return}btn.disabled=true;try{const r=await api('/api/v1/auth/verify-otp',{method:'POST',body:JSON.stringify({phone_number:authPh,otp_code:otp})});if(!r.ok||!r.data.success){toast(errMsg(r));return}ls(TK,r.data.data.access_token);ls(PH,authPh);closeAuth();updateAuthUI();toast('toast.signedIn');go('pay')}catch(e){toast('toast.netErr')}finally{btn.disabled=false}}
+async function authResend(){try{const r=await api('/api/v1/auth/resend-otp',{method:'POST',body:JSON.stringify({phone_number:authPh})});if(!r.ok){toast(r.status===429?'toast.rateLimited':errMsg(r));return}startCooldown(60);otpResult(r);toast('toast.newOtp')}catch(e){toast('toast.netErr')}}
+function logout(expired){ls(TK,null);ls(PH,null);updateAuthUI();if(expired){toast('toast.sessionExpired');openAuth()}else toast('toast.signedOut')}
+function updateAuthUI(){const a=isAuthed();if(!a){ls(TK,null)}document.getElementById('payLock').style.display=a?'none':'block';document.getElementById('payBody').style.display=a?'block':'none';const ph=ls(PH);document.getElementById('acctText').textContent=a&&ph?t('acct.loggedIn',{p:'0'+ph.slice(3)}):t('acct.loggedOut');const b=document.getElementById('acctBtn');b.textContent=a?t('acct.logout'):t('acct.login');b.onclick=a?()=>logout():openAuth;if(a&&ph)document.getElementById('phoneNumber').value='0'+ph.slice(3)}
 document.getElementById('authOtp').addEventListener('keydown',e=>{if(e.key==='Enter')authVerify()});
 document.getElementById('authPhone').addEventListener('keydown',e=>{if(e.key==='Enter')authSend()});
-updateAuthUI();
 // PWA - Service Worker registration & install prompt
 const installFab=document.getElementById('installFab');
 const installModal=document.getElementById('installModal');
@@ -324,7 +748,7 @@ function installFabHide(){installFab.classList.add('hide')}
 function promptInstall(){
   if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;installFabHide()})}
   else if(isIOS){installModal.classList.add('show')}
-  else{toast('Fungua menyu ya kivinjari na uchague "Sakinisha app"')}
+  else{toast('install.toast')}
 }
 function closeInstall(){installModal.classList.remove('show')}
 if('serviceWorker' in navigator){
@@ -340,6 +764,8 @@ if(isStandalone){installFabHide()}
 // Hash-based tab routing so PWA shortcuts (#penalty, #pay) open the right tab
 function routeFromHash(){const h=location.hash.replace('#','');if(h&&['dash','penalty','pay','hist','info'].includes(h))go(h)}
 window.addEventListener('hashchange',routeFromHash);routeFromHash();
+// Apply the saved language (default Kiswahili) once the whole UI exists.
+applyLang(ls(LANG_KEY)==='en'?'en':'sw');
 </script>
 </body>
 </html>

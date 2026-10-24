@@ -1,6 +1,6 @@
 {
-    "name": "sha_reminder",
-    "short_name": "sha_reminder",
+    "name": "sha_pay",
+    "short_name": "sha_pay",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

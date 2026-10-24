@@ -1,4 +1,4 @@
-package com.example.sha_reminder
+package com.shapay.app
 
 import io.flutter.embedding.android.FlutterActivity
 

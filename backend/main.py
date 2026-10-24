@@ -1,5 +1,5 @@
 """
-SHA Reminder & Penalty Estimation System - Main Entry Point
+sha-pay - Main Entry Point
 Serves the user-facing HTML app at root, API at /api/v1
 """
 
@@ -124,7 +124,7 @@ async def serve_app():
     index_file = frontend_path / "index.html"
     if index_file.exists():
         return FileResponse(str(index_file))
-    return {"message": "SHA Reminder System - Frontend not found. Open frontend/index.html directly."}
+    return {"message": "sha-pay - Frontend not found. Open frontend/index.html directly."}
 
 
 # PWA support: service worker, manifest, and app icons.

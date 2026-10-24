@@ -1,18 +1,18 @@
-version: "3.8"
+name: sha-pay
 
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: sha_user
-      POSTGRES_PASSWORD: sha_pass
-      POSTGRES_DB: sha_db
+      POSTGRES_USER: shapay_user
+      POSTGRES_PASSWORD: shapay_pass
+      POSTGRES_DB: shapay_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sha_user -d sha_db"]
+      test: ["CMD-SHELL", "pg_isready -U shapay_user -d shapay_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,8 +35,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
-      DATABASE_URL_SYNC: postgresql://sha_user:sha_pass@postgres:5432/sha_db
+      DATABASE_URL: postgresql+asyncpg://shapay_user:shapay_pass@postgres:5432/shapay_db
+      DATABASE_URL_SYNC: postgresql://shapay_user:shapay_pass@postgres:5432/shapay_db
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -62,7 +62,7 @@ services:
       dockerfile: backend/Dockerfile
     command: celery -A app.core.celery_config worker -l info -Q reminders,payments
     environment:
-      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
+      DATABASE_URL: postgresql+asyncpg://shapay_user:shapay_pass@postgres:5432/shapay_db
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -76,9 +76,12 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: celery -A app.core.celery_config beat -l info
+    # The scheduler lives in its own container on purpose: beat is what
+    # actually triggers the payment/overdue reminder runs, and keeping it
+    # separate means a worker restart never silently stops the schedule.
+    command: celery -A app.core.celery_config beat -l info --schedule=/tmp/celerybeat-schedule
     environment:
-      DATABASE_URL: postgresql+asyncpg://sha_user:sha_pass@postgres:5432/sha_db
+      DATABASE_URL: postgresql+asyncpg://shapay_user:shapay_pass@postgres:5432/shapay_db
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0

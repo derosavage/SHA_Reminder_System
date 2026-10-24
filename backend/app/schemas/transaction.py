@@ -8,6 +8,7 @@ from datetime import datetime
 import re
 
 from app.core.config import settings
+from app.utils.phone import is_valid_kenyan_phone, normalize_phone_number
 
 
 class MpesaSTKPushRequest(BaseModel):
@@ -23,14 +24,8 @@ class MpesaSTKPushRequest(BaseModel):
 
     @validator("phone_number")
     def validate_phone(cls, v):
-        v = re.sub(r"\D", "", v)
-        if v.startswith("0"):
-            v = "254" + v[1:]
-        elif v.startswith("+254"):
-            v = v[1:]
-        elif len(v) == 9:
-            v = "254" + v
-        if not v.startswith("254") or len(v) != 12:
+        v = normalize_phone_number(v)
+        if not is_valid_kenyan_phone(v):
             raise ValueError(
                 "Phone must be a valid Kenyan number (e.g., 0712345678)"
             )

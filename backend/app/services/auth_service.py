@@ -16,6 +16,7 @@ from loguru import logger
 from app.core.config import settings
 from app.models.user import User, UserRole, UserStatus
 from app.schemas.user import UserCreate, UserResponse
+from app.utils.phone import normalize_phone_number
 from app.utils.time import utcnow
 
 
@@ -132,7 +133,9 @@ class AuthService:
         otp_code: str,
     ) -> Optional[User]:
         """Verify OTP code for phone verification."""
-        query = select(User).where(User.phone_number == phone_number)
+        query = select(User).where(
+            User.phone_number == normalize_phone_number(phone_number)
+        )
         result = await db.execute(query)
         user = result.scalar_one_or_none()
 
@@ -191,7 +194,9 @@ class AuthService:
         membership oracle: an attacker could tell a registered phone (400) from
         an unregistered one (200) without sending a single SMS.
         """
-        query = select(User).where(User.phone_number == phone_number)
+        query = select(User).where(
+            User.phone_number == normalize_phone_number(phone_number)
+        )
         result = await db.execute(query)
         user = result.scalar_one_or_none()
 
@@ -224,7 +229,9 @@ class AuthService:
         phone_number: str,
     ) -> Optional[User]:
         """Find user by phone number."""
-        query = select(User).where(User.phone_number == phone_number)
+        query = select(User).where(
+            User.phone_number == normalize_phone_number(phone_number)
+        )
         result = await db.execute(query)
         return result.scalar_one_or_none()
 

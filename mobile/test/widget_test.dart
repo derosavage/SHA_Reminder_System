@@ -1,10 +1,10 @@
-// Basic smoke tests for the SHA Reminder Flutter app.
+// Basic smoke tests for the sha-pay Flutter app.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:sha_reminder/src/features/dashboard/presentation/main_navigation_screen.dart';
+import 'package:sha_pay/src/features/dashboard/presentation/main_navigation_screen.dart';
 
 void main() {
   testWidgets('Main navigation renders with 3 destinations',

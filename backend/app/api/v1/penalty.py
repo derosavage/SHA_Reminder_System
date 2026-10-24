@@ -9,13 +9,18 @@ from typing import Optional
 from loguru import logger
 
 from app.core.database import get_db
+from app.core.i18n import translate
 from app.schemas.penalty import (
     PenaltyCalculateRequest,
     PenaltyCalculateResponse,
     PenaltyHistoryResponse,
 )
 from app.services.penalty_service import PenaltyService
-from app.utils.dependencies import get_current_user_id, get_optional_user_id
+from app.utils.dependencies import (
+    get_current_user_id,
+    get_optional_user_id,
+    get_request_language,
+)
 
 router = APIRouter()
 
@@ -25,6 +30,7 @@ async def calculate_penalty(
     request: PenaltyCalculateRequest,
     user_id: Optional[str] = Depends(get_optional_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """
     Calculate penalty for missed SHA contributions.
@@ -52,6 +58,7 @@ async def calculate_penalty(
         )
         return {
             "success": True,
+            "message": translate("penalty_calculated", language),
             "data": {
                 "calculation_id": str(calc.id),
                 **result,
@@ -61,6 +68,7 @@ async def calculate_penalty(
     # Anonymous calculation (no DB save)
     return {
         "success": True,
+        "message": translate("penalty_calculated", language),
         "data": {
             "calculation_id": None,
             **result,
@@ -74,6 +82,7 @@ async def get_penalty_history(
     page_size: int = Query(10, ge=1, le=50),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """Get penalty calculation history for the authenticated user."""
     offset = (page - 1) * page_size
@@ -83,6 +92,7 @@ async def get_penalty_history(
 
     return {
         "success": True,
+        "message": translate("penalty_history_retrieved", language),
         "data": {
             "calculations": [
                 {
@@ -103,13 +113,16 @@ async def get_penalty_history(
 
 
 @router.get("/formula", response_model=dict)
-async def get_penalty_formula():
+async def get_penalty_formula(
+    language: str = Depends(get_request_language),
+):
     """
     Get the penalty calculation formula and official rates.
     Transparent formula as required by SHA Tariff Registry.
     """
     return {
         "success": True,
+        "message": translate("penalty_formula", language),
         "data": {
             "formula": "Penalty = monthly_contribution × 0.02 × min(months_late, 12)",
             "rate": "2% per month (0.02)",

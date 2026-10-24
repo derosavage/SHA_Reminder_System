@@ -9,7 +9,7 @@ class LocalDatabase {
   Future<dynamic> get database async {
     if (kIsWeb) return null; // sqflite doesn't work on web
     if (_database != null) return _database!;
-    _database = await _initDB('sha_reminder.db');
+    _database = await _initDB('sha_pay.db');
     return _database!;
   }
 

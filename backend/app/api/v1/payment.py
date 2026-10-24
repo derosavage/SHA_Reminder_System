@@ -9,6 +9,7 @@ from typing import Optional
 from loguru import logger
 
 from app.core.database import get_db
+from app.core.i18n import translate
 from app.schemas.transaction import (
     MpesaSTKPushRequest,
     TransactionResponse,
@@ -19,7 +20,11 @@ from app.services.auth_service import AuthService
 import secrets
 import re
 from app.core.config import settings
-from app.utils.dependencies import get_current_user_id, get_optional_user_id
+from app.utils.dependencies import (
+    get_current_user_id,
+    get_optional_user_id,
+    get_request_language,
+)
 from app.utils.rate_limit import rate_limit, check_rate_limit
 from app.utils.time import utcnow
 
@@ -33,6 +38,7 @@ async def initiate_stk_push(
     _rl: None = Depends(rate_limit("stk", 5)),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """
     Initiate M-Pesa STK Push payment to Paybill 200222.
@@ -49,19 +55,19 @@ async def initiate_stk_push(
     if not user or not user.is_phone_verified:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Please log in again.",
+            detail=translate("payment_login_required", language),
         )
     if request.phone_number != user.phone_number:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only pay from your own registered phone number.",
+            detail=translate("payment_own_phone_only", language),
         )
     request.account_reference = user.national_id
 
     if not re.fullmatch(r"254[17]\d{8}", request.phone_number):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Phone number must be in 254XXXXXXXXX format.",
+            detail=translate("payment_phone_format", language),
         )
     # Stop the endpoint being used to spam prompts at one phone number.
     check_rate_limit(f"stk-phone:{request.phone_number}", 3, 600)
@@ -76,7 +82,7 @@ async def initiate_stk_push(
     if not result:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Failed to initiate M-Pesa payment. Please try again.",
+            detail=translate("payment_failed", language),
         )
 
     # Save transaction to database if authenticated
@@ -104,7 +110,7 @@ async def initiate_stk_push(
 
     return {
         "success": True,
-        "message": "M-Pesa payment request sent. Check your phone for STK Push prompt.",
+        "message": translate("payment_request_sent", language),
         "data": {
             "merchant_request_id": result.get("MerchantRequestID"),
             "checkout_request_id": result.get("CheckoutRequestID"),
@@ -121,6 +127,7 @@ async def mpesa_callback(
     callback_data: dict,
     token: str = Query("", description="Shared secret configured in the callback URL"),
     db: AsyncSession = Depends(get_db),
+    language: str = Depends(get_request_language),
 ):
     """
     M-Pesa callback endpoint.
@@ -131,11 +138,13 @@ async def mpesa_callback(
     if expected:
         if not secrets.compare_digest(token, expected):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=translate("forbidden", language),
             )
     elif not settings.ALLOW_INSECURE_DEFAULTS:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=translate("forbidden", language),
         )
 
     logger.info("M-Pesa callback received")

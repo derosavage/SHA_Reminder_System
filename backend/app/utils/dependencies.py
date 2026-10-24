@@ -1,16 +1,22 @@
 """
 FastAPI Dependencies
-Auth middleware, rate limiting, and common dependency injection.
+Auth middleware, rate limiting, language resolution, and common dependency
+injection.
 """
 
 from typing import Optional
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import Depends, HTTPException, status, Header, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from app.core.database import get_db
+from app.core.i18n import (
+    DEFAULT_LANGUAGE,
+    coerce_language,
+    parse_accept_language,
+)
 from app.models.user import User, UserStatus
 from app.services.auth_service import AuthService
 
@@ -91,3 +97,37 @@ async def get_client_info(
         if x_forwarded_for
         else None,
     }
+
+
+async def get_request_language(
+    lang: Optional[str] = Query(
+        None, description="Explicit language override (sw or en)"
+    ),
+    accept_language: Optional[str] = Header(None),
+    user_id: Optional[str] = Depends(get_optional_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """
+    Resolve the language a response should be written in.
+
+    Priority: explicit ?lang= parameter, then the Accept-Language header,
+    then the authenticated user's stored preference, then the default
+    language. Unauthenticated requests simply skip the user preference.
+    """
+    explicit = coerce_language(lang, fallback="")
+    if explicit:
+        return explicit
+
+    header_match = parse_accept_language(accept_language)
+    if header_match:
+        return header_match
+
+    if user_id:
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if user is not None:
+            return coerce_language(
+                user.preferred_language, fallback=DEFAULT_LANGUAGE
+            )
+
+    return DEFAULT_LANGUAGE

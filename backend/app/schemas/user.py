@@ -7,6 +7,8 @@ from typing import Optional
 from datetime import datetime
 import re
 
+from app.utils.phone import is_valid_kenyan_phone, normalize_phone_number
+
 
 class UserCreate(BaseModel):
     """Schema for user registration."""
@@ -18,15 +20,8 @@ class UserCreate(BaseModel):
 
     @validator("phone_number")
     def validate_phone(cls, v):
-        # Remove any non-digit characters
-        v = re.sub(r"\D", "", v)
-        if v.startswith("0"):
-            v = "254" + v[1:]
-        elif v.startswith("7"):
-            v = "254" + v
-        elif v.startswith("+254"):
-            v = v[1:]
-        if not v.startswith("254") or len(v) != 12:
+        v = normalize_phone_number(v)
+        if not is_valid_kenyan_phone(v):
             raise ValueError(
                 "Phone must be a valid Kenyan number (e.g., 0712345678)"
             )
@@ -46,11 +41,24 @@ class UserLogin(BaseModel):
     password: Optional[str] = None
     otp_code: Optional[str] = None
 
+    @validator("phone_number")
+    def normalize_phone(cls, v):
+        # Lenient on purpose: an unrecognised number is still accepted and
+        # simply matches no account. Rejecting it here would make this
+        # endpoint distinguish "malformed" from "unknown" numbers.
+        return normalize_phone_number(v)
+
 
 class VerifyOTP(BaseModel):
     """Schema for OTP verification."""
     phone_number: str
     otp_code: str = Field(..., min_length=4, max_length=6)
+
+    @validator("phone_number")
+    def normalize_phone(cls, v):
+        # Same reasoning as UserLogin: normalize what we can, and let an
+        # unknown number fail with the same generic message as a wrong OTP.
+        return normalize_phone_number(v)
 
 
 class UserUpdate(BaseModel):

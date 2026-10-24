@@ -1,25 +1,157 @@
 services:
+  # ------------------------------------------------------------------
+  # Redis: Celery broker + result backend.
+  # The reminder SMS pipeline needs this; without it the beat schedule
+  # has nowhere to publish tasks and every scheduled run fails.
+  # NOTE: Render's Redis and background workers are paid-plan features
+  # (Starter or higher). The free tier only covers the `web` service.
+  # ------------------------------------------------------------------
+  - type: redis
+    name: sha-pay-redis
+    plan: starter
+    ipAllowList: []
+
+  # ------------------------------------------------------------------
+  # API + PWA (serves the whole web app, including frontend/).
+  # ------------------------------------------------------------------
   - type: web
-    name: sha-reminder-api
+    name: sha-pay-api
     runtime: python
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
+    envVarGroups:
+      - sha-pay-secrets
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+
+  # ------------------------------------------------------------------
+  # Celery worker: executes the scheduled reminder tasks.
+  # Queue names must match the task_routes in app/core/celery_config.py.
+  # ------------------------------------------------------------------
+  - type: worker
+    name: sha-pay-worker
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.core.celery_config worker -l info -Q reminders,payments
+    envVarGroups:
+      - sha-pay-secrets
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+
+  # ------------------------------------------------------------------
+  # Celery beat: the scheduler. This is what actually fires the
+  # "payment due" and "overdue payment" reminder runs. Without this
+  # service the reminders never send, no matter how healthy the worker
+  # is.
+  # The schedule file must live on a writable path: Render's disk is
+  # ephemeral and read-only outside /tmp.
+  # ------------------------------------------------------------------
+  - type: worker
+    name: sha-pay-scheduler
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.core.celery_config beat -l info --schedule=/tmp/celerybeat-schedule
+    envVarGroups:
+      - sha-pay-secrets
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: sha-pay-redis
+          property: connectionString
+
+# ------------------------------------------------------------------
+# Shared environment for every service above. Keeping the secrets in
+# one group means the API, the worker and the scheduler can never
+# drift apart (a mismatched SECRET_KEY would silently break OTP
+# hashing and JWT validation).
+# ------------------------------------------------------------------
+envVarGroups:
+  - name: sha-pay-secrets
+    envVars:
+      # Shared signing key: JWT access tokens + OTP hashing.
       - key: SECRET_KEY
         generateValue: true
-      - key: DEBUG
-        value: "false"
-      # OTPs are delivered by SMS only. Do not add ALLOW_INSECURE_DEFAULTS=true
-      # here: it used to make /auth/login return the OTP in the response body,
-      # which let anyone sign in as any registered phone number. Provide
-      # AT_API_KEY / AT_USERNAME / AT_SENDER_ID below instead.
+      # Shared secret Safaricom echoes back as ?token=... on the callback.
       - key: MPESA_CALLBACK_SECRET
         generateValue: true
+      # Must stay "false": with DEBUG=true and no SMS provider the auth
+      # endpoints return the OTP in the response body, which lets anyone
+      # sign in as any registered phone number.
+      - key: DEBUG
+        value: "false"
       - key: MPESA_ENVIRONMENT
         value: sandbox
-
+      # Neon (or any Postgres) connection string. Set in the dashboard.
+      - key: DATABASE_URL
+        sync: false
+      # Full callback URL including ?token=<MPESA_CALLBACK_SECRET value>
+      - key: MPESA_CALLBACK_URL
+        sync: false
+      # Daraja credentials (STK push returns 502 without them)
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_BUSINESS_SHORTCODE
+        sync: false
+      # Africa's Talking SMS. AT_USERNAME=sandbox means "do not send".
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_SENDER_ID
+        sync: false

@@ -8,6 +8,7 @@ from loguru import logger
 import httpx
 
 from app.core.config import settings
+from app.core.i18n import DEFAULT_LANGUAGE, coerce_language, translate
 
 
 class SMSService:
@@ -109,12 +110,17 @@ class SMSService:
         return success
 
     @staticmethod
-    async def send_otp(phone_number: str, otp: str) -> bool:
-        """Send OTP verification code via SMS."""
-        message = (
-            f"Your SHA Reminder System OTP is: {otp}. "
-            f"Valid for {settings.OTP_EXPIRY_MINUTES} minutes. "
-            f"Do not share this code."
+    async def send_otp(
+        phone_number: str,
+        otp: str,
+        language: str = DEFAULT_LANGUAGE,
+    ) -> bool:
+        """Send OTP verification code via SMS, in the user's language."""
+        message = translate(
+            "otp_sms",
+            language,
+            otp=otp,
+            minutes=settings.OTP_EXPIRY_MINUTES,
         )
         result = await SMSService.send_sms(phone_number, message)
         if not result:
@@ -128,21 +134,15 @@ class SMSService:
         amount: float,
         due_date: str,
         account_ref: str,
-        language: str = "sw",
+        language: str = DEFAULT_LANGUAGE,
     ) -> bool:
-        """Send payment reminder SMS."""
-        if language == "sw":
-            message = (
-                f"Mpendwa {name}, malipo yako ya SHA ya KES {amount} "
-                f"yanatarajiwa tarehe {due_date}. Lipa kwa M-Pesa "
-                f"Paybill 200222, Namba {account_ref}. "
-                f"Ili kuepuka adhabu ya 2%/mwezi, lipa kabla ya tarehe 9."
-            )
-        else:
-            message = (
-                f"Dear {name}, your SHA payment of KES {amount} "
-                f"is due on {due_date}. Pay via M-Pesa Paybill 200222, "
-                f"Account {account_ref}. "
-                f"Avoid 2%/month penalty - pay before the 9th."
-            )
+        """Send payment reminder SMS in the given language."""
+        message = translate(
+            "payment_reminder_sms",
+            coerce_language(language, fallback=DEFAULT_LANGUAGE),
+            name=name,
+            amount=amount,
+            due_date=due_date,
+            account_ref=account_ref,
+        )
         return await SMSService.send_sms(phone_number, message)
