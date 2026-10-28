@@ -6,9 +6,10 @@ services:
   # NOTE: Render's Redis and background workers are paid-plan features
   # (Starter or higher). The free tier only covers the `web` service.
   # ------------------------------------------------------------------
-  - type: keyvalue
+  - type: redis
     name: sha-pay-redis
     plan: starter
+    maxmemoryPolicy: noeviction
     ipAllowList: []
 
   # ------------------------------------------------------------------
@@ -29,17 +30,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
 
@@ -61,17 +62,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
 
@@ -97,17 +98,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: keyvalue
+          type: redis
           name: sha-pay-redis
           property: connectionString
 
