@@ -2,7 +2,7 @@
 <html lang="sw">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n="meta.title">sha-pay - Kikumbusho cha Malipo</title>
 <!-- PWA -->
 <meta name="description" content="Kikumbusho cha malipo ya SHA na makadirio ya adhabu. Lipa kwa M-Pesa Paybill 200222." data-i18n-attr="content:meta.description">
@@ -105,6 +105,48 @@ ol{padding-left:20px;line-height:1.9;font-size:14px;color:var(--ink)}
 #authModal .link{background:none;border:none;color:var(--moss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;width:100%;padding:8px}
 #authModal .link:disabled{color:var(--muted);cursor:default}
 .acct-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+/* Adaptable layout: phones stay narrow, tablets / desktops get more room */
+@media (min-width: 480px) {
+  .container { padding: 20px 24px; }
+  .grid-2 { gap: 14px; }
+}
+@media (min-width: 600px) {
+  .container { max-width: 640px; padding: 24px; }
+  .hero .value { font-size: 36px; }
+  .paybill-num { font-size: 38px; }
+  .auth-tabs button { font-size: 15px; }
+  .nav { max-width: 640px; left: 50%; right: auto; transform: translateX(-50%); border-radius: 18px 18px 0 0; }
+}
+@media (min-width: 768px) {
+  .container { max-width: 720px; }
+  .nav { max-width: 720px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .card { padding: 22px; }
+}
+@media (min-width: 1024px) {
+  .container { max-width: 960px; }
+  .nav { max-width: 960px; }
+  .grid-2 { grid-template-columns: repeat(3, 1fr); }
+  .hero { padding: 28px; }
+  .card { padding: 24px; }
+}
+@media (min-width: 1280px) {
+  .container { max-width: 1160px; }
+  .nav { max-width: 1160px; }
+  .grid-2 { grid-template-columns: repeat(4, 1fr); }
+}
+/* Modal sizing keeps centered and readable on larger screens */
+@media (min-width: 600px) {
+  #installModal .box { max-width: 400px; }
+  #authModal .box { max-width: 420px; }
+}
+@media (min-width: 1024px) {
+  #installModal .box,
+  #authModal .box { padding: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
 </style>
 </head>
 <body>

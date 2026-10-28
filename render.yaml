@@ -6,7 +6,7 @@ services:
   # NOTE: Render's Redis and background workers are paid-plan features
   # (Starter or higher). The free tier only covers the `web` service.
   # ------------------------------------------------------------------
-  - type: redis
+  - type: keyvalue
     name: sha-pay-redis
     plan: starter
     ipAllowList: []
@@ -29,17 +29,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
 
@@ -47,7 +47,7 @@ services:
   # Celery worker: executes the scheduled reminder tasks.
   # Queue names must match the task_routes in app/core/celery_config.py.
   # ------------------------------------------------------------------
-  - type: worker
+  - type: background
     name: sha-pay-worker
     runtime: python
     plan: starter
@@ -61,17 +61,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
 
@@ -83,7 +83,7 @@ services:
   # The schedule file must live on a writable path: Render's disk is
   # ephemeral and read-only outside /tmp.
   # ------------------------------------------------------------------
-  - type: worker
+  - type: background
     name: sha-pay-scheduler
     runtime: python
     plan: starter
@@ -97,17 +97,17 @@ services:
         value: 3.11.9
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
-          type: redis
+          type: keyvalue
           name: sha-pay-redis
           property: connectionString
 
