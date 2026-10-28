@@ -23,9 +23,8 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
-    envVarGroups:
-      - sha-pay-secrets
     envVars:
+      - fromGroup: sha-pay-secrets
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: REDIS_URL
@@ -55,9 +54,8 @@ services:
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.core.celery_config worker -l info -Q reminders,payments
-    envVarGroups:
-      - sha-pay-secrets
     envVars:
+      - fromGroup: sha-pay-secrets
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: REDIS_URL
@@ -91,9 +89,8 @@ services:
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A app.core.celery_config beat -l info --schedule=/tmp/celerybeat-schedule
-    envVarGroups:
-      - sha-pay-secrets
     envVars:
+      - fromGroup: sha-pay-secrets
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: REDIS_URL
