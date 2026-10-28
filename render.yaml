@@ -47,7 +47,7 @@ services:
   # Celery worker: executes the scheduled reminder tasks.
   # Queue names must match the task_routes in app/core/celery_config.py.
   # ------------------------------------------------------------------
-  - type: background
+  - type: worker
     name: sha-pay-worker
     runtime: python
     plan: starter
@@ -83,7 +83,7 @@ services:
   # The schedule file must live on a writable path: Render's disk is
   # ephemeral and read-only outside /tmp.
   # ------------------------------------------------------------------
-  - type: background
+  - type: worker
     name: sha-pay-scheduler
     runtime: python
     plan: starter
