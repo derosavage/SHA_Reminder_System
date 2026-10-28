@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "")
+    ADMIN_TRIGGER_TOKEN: str = os.getenv("ADMIN_TRIGGER_TOKEN", "")
     ALLOW_INSECURE_DEFAULTS: bool = os.getenv(
         "ALLOW_INSECURE_DEFAULTS", "false"
     ).lower() == "true"

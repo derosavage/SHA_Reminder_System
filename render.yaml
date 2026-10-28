@@ -124,6 +124,9 @@ envVarGroups:
       # Shared secret Safaricom echoes back as ?token=... on the callback.
       - key: MPESA_CALLBACK_SECRET
         generateValue: true
+      # Token used by GitHub Actions to trigger the free-tier reminder endpoints.
+      - key: ADMIN_TRIGGER_TOKEN
+        sync: false
       # Must stay "false": with DEBUG=true and no SMS provider the auth
       # endpoints return the OTP in the response body, which lets anyone
       # sign in as any registered phone number.

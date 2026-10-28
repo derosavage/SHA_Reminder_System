@@ -1,0 +1,22 @@
+name: SHA overdue reminder trigger
+
+on:
+  schedule:
+    - cron: "0 7 10,15,20,25 * *"
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger overdue reminder run
+        env:
+          API_BASE_URL: ${{ secrets.SHA_API_BASE_URL }}
+          ADMIN_TRIGGER_TOKEN: ${{ secrets.ADMIN_TRIGGER_TOKEN }}
+        run: |
+          curl --fail --silent --show-error \
+            --max-time 120 \
+            -X POST \
+            -H "X-Admin-Token: ${ADMIN_TRIGGER_TOKEN}" \
+            "${API_BASE_URL}/api/v1/reminders/admin/run-overdue-reminders"

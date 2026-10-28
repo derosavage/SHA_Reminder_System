@@ -3,15 +3,18 @@ Reminder API Routes
 Handles scheduling and managing payment reminders.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from loguru import logger
+import hmac
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.i18n import translate
 from app.schemas.reminder import ReminderScheduleRequest
 from app.services.reminder_service import ReminderService
+from tasks.reminder_tasks import _send_reminders
 from app.services.auth_service import AuthService
 from app.utils.dependencies import get_current_user_id, get_request_language
 
@@ -130,3 +133,29 @@ async def get_reminder_settings(
             "payment_deadline_day": 9,
         },
     }
+@router.post("/admin/run-payment-reminders", response_model=dict)
+async def run_payment_reminders_job(
+    x_admin_token: Optional[str] = Header(default=None, alias="X-Admin-Token"),
+):
+    """Free-tier scheduler target: run payment-due reminders without Celery/Redis."""
+    if not settings.ADMIN_TRIGGER_TOKEN or not x_admin_token:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if not hmac.compare_digest(x_admin_token, settings.ADMIN_TRIGGER_TOKEN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    sent, total = await _send_reminders("payment_due", only_inactive=False)
+    return {"success": True, "data": {"sent": sent, "total": total}}
+
+
+@router.post("/admin/run-overdue-reminders", response_model=dict)
+async def run_overdue_reminders_job(
+    x_admin_token: Optional[str] = Header(default=None, alias="X-Admin-Token"),
+):
+    """Free-tier scheduler target: run overdue reminders without Celery/Redis."""
+    if not settings.ADMIN_TRIGGER_TOKEN or not x_admin_token:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if not hmac.compare_digest(x_admin_token, settings.ADMIN_TRIGGER_TOKEN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    sent, total = await _send_reminders("payment_overdue", only_inactive=True)
+    return {"success": True, "data": {"sent": sent, "total": total}}
