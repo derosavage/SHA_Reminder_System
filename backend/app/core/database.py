@@ -41,9 +41,10 @@ def normalize_database_url(url: str) -> str:
         if key == "sslmode":
             key = "ssl"
         query.append((key, value))
+    if "ssl" not in {k for k, _ in parse_qsl(parts.query)} and "supabase" in parts.netloc:
+        query.append(("ssl", "require"))
+
     return urlunsplit(parts._replace(query=urlencode(query)))
-
-
 # Use SQLite for local dev (no install needed). Set DATABASE_URL=postgresql://...
 # (e.g. a Neon connection string) for production.
 DATABASE_URL = normalize_database_url(
