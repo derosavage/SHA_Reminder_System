@@ -57,7 +57,7 @@ if "sqlite" in DATABASE_URL:
 else:
     # Serverless Postgres (Neon) suspends idle compute: reconnect transparently.
     engine_kwargs = {"pool_pre_ping": True, "pool_recycle": 300}
-    if "-pooler" in DATABASE_URL:
+    if "-pooler" in DATABASE_URL or "pooler.supabase.com" in DATABASE_URL:
         # PgBouncer (transaction mode) can't use prepared-statement caching.
         connect_args = {"statement_cache_size": 0}
 
